@@ -66,25 +66,25 @@ class Appointment
 		$and = "AND (
 					(
 						(
-							(CAST(CONCAT(date_start,' ',time_start) AS DATETIME) >= ? AND CAST(CONCAT(date_start,' ',time_start) AS DATETIME) <= ?)
-							OR	(CAST(CONCAT(due_date,' ',time_end) AS DATETIME) >= ? AND CAST(CONCAT(due_date,' ',time_end) AS DATETIME) <= ? )
-							OR	(CAST(CONCAT(date_start,' ',time_start) AS DATETIME) <= ? AND CAST(CONCAT(due_date,' ',time_end) AS DATETIME) >= ?)
+							(to_timestamp(date_start || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') >= ? AND to_timestamp(date_start || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') <= ?)
+							OR	(to_timestamp(due_date || ' ' || time_end, 'YYYY-MM-DD HH24:MI:SS') >= ? AND to_timestamp(due_date || ' ' || time_end, 'YYYY-MM-DD HH24:MI:SS') <= ? )
+							OR	(to_timestamp(date_start || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') <= ? AND to_timestamp(due_date || ' ' || time_end, 'YYYY-MM-DD HH24:MI:SS') >= ?)
 						)
 						AND vtiger_recurringevents.activityid is NULL
 					)
 				OR (
-						(CAST(CONCAT(vtiger_recurringevents.recurringdate,' ',time_start) AS DATETIME) >= ?
-							AND CAST(CONCAT(vtiger_recurringevents.recurringdate,' ',time_start) AS DATETIME) <= ?)
-						OR	(CAST(CONCAT(due_date,' ',time_end) AS DATETIME) >= ? AND CAST(CONCAT(due_date,' ',time_end) AS DATETIME) <= ?)
-						OR	(CAST(CONCAT(vtiger_recurringevents.recurringdate,' ',time_start) AS DATETIME) <= ?
-							AND CAST(CONCAT(due_date,' ',time_end) AS DATETIME) >= ?)
+						(to_timestamp(vtiger_recurringevents.recurringdate || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') >= ?
+							AND to_timestamp(vtiger_recurringevents.recurringdate || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') <= ?)
+						OR	(to_timestamp(due_date || ' ' || time_end, 'YYYY-MM-DD HH24:MI:SS') >= ? AND to_timestamp(due_date || ' ' || time_end, 'YYYY-MM-DD HH24:MI:SS') <= ?)
+						OR	(to_timestamp(vtiger_recurringevents.recurringdate || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') <= ?
+							AND to_timestamp(due_date || ' ' || time_end, 'YYYY-MM-DD HH24:MI:SS') >= ?)
 					)
 				)";
 		
 		$userNameSql = getSqlForNameInDisplayFormat(array('first_name'=>
 							'vtiger_users.first_name', 'last_name' => 'vtiger_users.last_name'), 'Users');
 		
-        	$q= "select vtiger_activity.*, vtiger_crmentity.*,
+        	$q= "select * from ( select distinct on (vtiger_activity.activityid) vtiger_activity.*, vtiger_crmentity.*,
 					case when (vtiger_users.user_name not like '') then $userNameSql else vtiger_groups.groupname end as user_name
 					FROM vtiger_activity
 						inner join vtiger_crmentity on vtiger_activity.activityid = vtiger_crmentity.crmid
@@ -124,7 +124,7 @@ class Appointment
 		}
 									
         $q .= " AND vtiger_recurringevents.activityid is NULL ";
-        $q .= " group by vtiger_activity.activityid ORDER by vtiger_activity.date_start,vtiger_activity.time_start";
+        $q .= " order by vtiger_activity.activityid ) as t ORDER by t.date_start,t.time_start";
 
 		$r = $adb->pquery($q, $params);
 		$n = $adb->getRowCount($r);
@@ -173,7 +173,7 @@ class Appointment
 		//Get Recurring events
 		$q = "SELECT vtiger_activity.*, vtiger_crmentity.*, case when (vtiger_users.user_name not like '') then $userNameSql else vtiger_groups.groupname end as user_name , vtiger_recurringevents.recurringid, vtiger_recurringevents.recurringdate as date_start ,vtiger_recurringevents.recurringtype,vtiger_groups.groupname from vtiger_activity inner join vtiger_crmentity on vtiger_activity.activityid = vtiger_crmentity.crmid inner join vtiger_recurringevents on vtiger_activity.activityid=vtiger_recurringevents.activityid left join vtiger_groups on vtiger_groups.groupid = vtiger_crmentity.smownerid LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid";
 		$q .= getNonAdminAccessControlQuery('Calendar',$current_user);
-        $q.=" where vtiger_crmentity.deleted = 0 and vtiger_activity.activitytype not in ('Emails','Task') AND (cast(concat(recurringdate, ' ', time_start) as datetime) between ? and ?) ";
+        $q.=" where vtiger_crmentity.deleted = 0 and vtiger_activity.activitytype not in ('Emails','Task') AND (to_timestamp(recurringdate || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') between ? and ?) ";
 		
 		// User Select Customization
 		$q .= $query_filter_prefix;

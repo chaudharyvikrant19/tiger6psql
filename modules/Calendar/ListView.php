@@ -185,9 +185,9 @@ if (isset($_REQUEST['from_homepage'])) {
 	$endDateTime = $userEndDateTime->getDBInsertDateTimeValue();
 
 	if ($_REQUEST['from_homepage'] == 'upcoming_activities')
-		$list_query .= " AND (vtiger_activity.status is NULL OR vtiger_activity.status not in ('Completed','Deferred')) and (vtiger_activity.eventstatus is NULL OR  vtiger_activity.eventstatus not in ('Held','Not Held')) AND (CAST((CONCAT(date_start,' ',time_start)) AS DATETIME) >= '$startDateTime' OR CAST((CONCAT(vtiger_recurringevents.recurringdate,' ',time_start)) AS DATETIME) >= '$startDateTime')";
+		$list_query .= " AND (vtiger_activity.status is NULL OR vtiger_activity.status not in ('Completed','Deferred')) and (vtiger_activity.eventstatus is NULL OR  vtiger_activity.eventstatus not in ('Held','Not Held')) AND (to_timestamp(date_start || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') >= '$startDateTime' OR to_timestamp(vtiger_recurringevents.recurringdate || ' ' ||time_start, 'YYYY-MM-DD HH24:MI:SS') >= '$startDateTime')";
 	elseif ($_REQUEST['from_homepage'] == 'pending_activities')
-		$list_query .= " AND (vtiger_activity.status is NULL OR vtiger_activity.status not in ('Completed','Deferred')) and (vtiger_activity.eventstatus is NULL OR  vtiger_activity.eventstatus not in ('Held','Not Held')) AND (CAST((CONCAT(due_date,' ',time_end)) AS DATETIME) <= '$endDateTime' OR CAST((CONCAT(vtiger_recurringevents.recurringdate,' ',time_start)) AS DATETIME) <= '$endDateTime')";
+		$list_query .= " AND (vtiger_activity.status is NULL OR vtiger_activity.status not in ('Completed','Deferred')) and (vtiger_activity.eventstatus is NULL OR  vtiger_activity.eventstatus not in ('Held','Not Held')) AND (to_timestamp(due_date || ' ' || time_end, 'YYYY-MM-DD HH24:MI:SS') <= '$endDateTime' OR to_timestamp(vtiger_recurringevents.recurringdate || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') <= '$endDateTime')";
 }
 
 if(isset($order_by) && $order_by != '') {
@@ -217,8 +217,8 @@ $smarty->assign("NEW_EVENT",$app_strings['LNK_NEW_EVENT']);
 $smarty->assign("NEW_TASK",$app_strings['LNK_NEW_TASK']);
 
 //Postgres 8 fixes
-if( $adb->dbType == "pgsql")
-	$list_query = fixPostgresQuery( $list_query, $log, 0);
+//if( $adb->dbType == "pgsql")
+//	$list_query = fixPostgresQuery( $list_query, $log, 0);
 
 if(PerformancePrefs::getBoolean('LISTVIEW_COMPUTE_PAGE_COUNT', false) === true){
 	$count_result = $adb->query( mkCountQuery( $list_query));

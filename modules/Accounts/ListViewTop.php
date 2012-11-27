@@ -51,7 +51,7 @@ function getTopAccounts($maxval,$calCnt)
 			$app_strings['LBL_CLOSE_WON']."','".$app_strings['LBL_CLOSE_LOST']."')";
 	$list_query .= " group by vtiger_account.accountid, vtiger_account.tickersymbol order by amount desc";
 
-	$list_query .= " LIMIT 0," . $adb->sql_escape_string($maxval);
+	$list_query .= " LIMIT " . $adb->sql_escape_string($maxval) . " OFFSET 0 ";
 	
 	if($calCnt == 'calculateCnt') {
 		$list_result_rows = $adb->query(mkCountQuery($list_query));

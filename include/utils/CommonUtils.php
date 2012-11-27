@@ -3143,7 +3143,9 @@ function getNameInDisplayFormat($input, $dispFormat = "lf") {
 }
 
 function concatNamesSql($string) {
-	$sqlString = "CONCAT(" . $string . ")";
+	//$sqlString = "CONCAT(" . $string . ")";
+	$sqlString = str_replace(",","||",$string);
+
 	return $sqlString;
 }
 
@@ -3239,7 +3241,7 @@ function getMenuStructure($selectModule = '') {
 	$tempMore = Array();
 	$resultant_array = Array();
 	$notallowed = -1;
-	$query = 'select tabid,name,tablabel,tabsequence,parent from vtiger_tab where parent is not null and parent!=" " and presence in (0,2) order by tabsequence';
+	$query = "select tabid,name,tablabel,tabsequence,parent from vtiger_tab where parent is not null and parent != ' ' and presence in (0,2) order by tabsequence";
 
 	$result = $adb->pquery($query, array());
 	require('user_privileges/user_privileges_' . $current_user->id . '.php');

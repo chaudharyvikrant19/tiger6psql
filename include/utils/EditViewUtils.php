@@ -1241,6 +1241,9 @@ function getOutputHtml($uitype, $fieldname, $fieldlabel, $maxlength, $col_fields
 		$editview_label[]=getTranslatedString($fieldlabel, $module_name);
 		$folderid=$col_fields['folderid'];
 		$foldername_query = 'select foldername from vtiger_attachmentsfolder where folderid = ?';
+		if(strlen($folderid) === 0) {
+			$folderid = '0';
+		}
 		$res = $adb->pquery($foldername_query,array($folderid));
 		$foldername = $adb->query_result($res,0,'foldername');
 		if($foldername != '' && $folderid != ''){

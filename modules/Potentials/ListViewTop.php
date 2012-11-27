@@ -54,7 +54,7 @@ function getTopPotentials($maxval,$calCnt)
 	$list_query = "SELECT vtiger_crmentity.crmid, vtiger_potential.potentialname,
 			vtiger_potential.amount, potentialid
 			FROM vtiger_potential
-			IGNORE INDEX(PRIMARY) INNER JOIN vtiger_crmentity
+			INNER JOIN vtiger_crmentity
 				ON vtiger_crmentity.crmid = vtiger_potential.potentialid";
 	$list_query .= getNonAdminAccessControlQuery('Potentials',$current_user);
 	$list_query .= "WHERE vtiger_crmentity.deleted = 0 ".$where;

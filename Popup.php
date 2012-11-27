@@ -392,7 +392,8 @@ if(isset($_REQUEST['start']) && $_REQUEST['start'] != '') {
 	$start = 1;
 }
 $limstart=($start-1)*$list_max_entries_per_page;
-$query.=" LIMIT $limstart,$list_max_entries_per_page";
+//$query.=" LIMIT $limstart,$list_max_entries_per_page";
+$query.=" OFFSET $limstart LIMIT $list_max_entries_per_page";
 $list_result = $adb->query($query);
 
 //Retreive the Navigation array

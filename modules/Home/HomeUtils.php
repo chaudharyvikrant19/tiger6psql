@@ -33,10 +33,14 @@ function homepage_getUpcomingActivities($maxval,$calCnt){
 	$userEndDateTime = new DateTimeField($userStartDate.' 23:59:00');
 	$endDateTime = $userEndDateTime->getDBInsertDateTimeValue();
 
-	$upcoming_condition = " AND (CAST((CONCAT(date_start,' ',time_start)) AS DATETIME) BETWEEN '$startDateTime' AND '$endDateTime'
-									OR CAST((CONCAT(vtiger_recurringevents.recurringdate,' ',time_start)) AS DATETIME) BETWEEN '$startDateTime' AND '$endDateTime')";
+	//$upcoming_condition = " AND (CAST((CONCAT(date_start,' ',time_start)) AS DATETIME) BETWEEN '$startDateTime' AND '$endDateTime'
+	//								OR CAST((CONCAT(vtiger_recurringevents.recurringdate,' ',time_start)) AS DATETIME) BETWEEN '$startDateTime' AND '$endDateTime')";
+	$upcoming_condition = " AND (to_timestamp(date_start || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') BETWEEN '$startDateTime' AND '$endDateTime' OR to_timestamp(vtiger_recurringevents.recurringdate || ' ' || time_start,  'YYYY-MM-DD HH24:MI:SS') BETWEEN '$startDateTime' AND '$endDateTime')";
 
-	$list_query = " select vtiger_crmentity.crmid,vtiger_crmentity.smownerid,".
+	//$list_query = " select vtiger_crmentity.crmid,vtiger_crmentity.smownerid,".
+	$list_query = "select * from (". 
+		" select distinct on (vtiger_activity.activityid) ". 
+	    "vtiger_crmentity.crmid,vtiger_crmentity.smownerid,".
 		"vtiger_crmentity.setype, vtiger_recurringevents.recurringdate, vtiger_activity.* ".
 		"from vtiger_activity inner join vtiger_crmentity on vtiger_crmentity.crmid=".
 		"vtiger_activity.activityid LEFT JOIN vtiger_groups ON vtiger_groups.groupid = ".
@@ -48,8 +52,10 @@ function homepage_getUpcomingActivities($maxval,$calCnt){
 	"('Completed','Deferred')) and  (  vtiger_activity.eventstatus is NULL OR ".
 	"vtiger_activity.eventstatus not in ('Held','Not Held') )".$upcoming_condition;
 
-	$list_query.= " GROUP BY vtiger_activity.activityid";
-	$list_query.= " ORDER BY date_start,time_start ASC";
+	//$list_query.= " GROUP BY vtiger_activity.activityid";
+	//$list_query.= " ORDER BY date_start,time_start ASC";
+	$list_query.= " ORDER BY vtiger_activity.activityid ) as t ";
+	$list_query.= " ORDER BY t.date_start, t.time_start ASC";
 	$list_query.= " limit $maxval";
 
 	$res = $adb->query($list_query);
@@ -165,10 +171,14 @@ function homepage_getPendingActivities($maxval,$calCnt){
 	$userEndDateTime = new DateTimeField($userStartDate.' 23:59:00');
 	$endDateTime = $userEndDateTime->getDBInsertDateTimeValue();
 
-	$pending_condition = " AND (CAST((CONCAT(date_start,' ',time_start)) AS DATETIME) BETWEEN '$startDateTime' AND '$endDateTime'
-									OR CAST((CONCAT(vtiger_recurringevents.recurringdate,' ',time_start)) AS DATETIME) BETWEEN '$startDateTime' AND '$endDateTime')";
+	//$pending_condition = " AND (CAST((CONCAT(date_start,' ',time_start)) AS DATETIME) BETWEEN '$startDateTime' AND '$endDateTime'
+	//								OR CAST((CONCAT(vtiger_recurringevents.recurringdate,' ',time_start)) AS DATETIME) BETWEEN '$startDateTime' AND '$endDateTime')";
+	$pending_condition = " AND (to_timestamp(date_start || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') BETWEEN '$startDateTime' AND '$endDateTime' OR to_timestamp(vtiger_recurringevents.recurringdate || ' ' || time_start,  'YYYY-MM-DD HH24:MI:SS') BETWEEN '$startDateTime' AND '$endDateTime')";
 
-	$list_query = "select vtiger_crmentity.crmid,vtiger_crmentity.smownerid,vtiger_crmentity.".
+	//$list_query = "select vtiger_crmentity.crmid,vtiger_crmentity.smownerid,vtiger_crmentity.".
+	$list_query = "select * from ( ".
+	"select distinct on (vtiger_activity.activityid) ".
+	"vtiger_crmentity.crmid,vtiger_crmentity.smownerid,vtiger_crmentity.".
 	"setype, vtiger_recurringevents.recurringdate, vtiger_activity.* from vtiger_activity ".
 	"inner join vtiger_crmentity on vtiger_crmentity.crmid=vtiger_activity.activityid LEFT ".
 	"JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid left outer join ".
@@ -179,8 +189,10 @@ function homepage_getPendingActivities($maxval,$calCnt){
 	"('Completed','Deferred')) and (vtiger_activity.eventstatus is NULL OR  vtiger_activity.".
 	"eventstatus not in ('Held','Not Held')) ".$pending_condition;
 
-	$list_query.= " GROUP BY vtiger_activity.activityid";
-	$list_query.= " ORDER BY date_start,time_start ASC";
+	//$list_query.= " GROUP BY vtiger_activity.activityid";
+	//$list_query.= " ORDER BY date_start,time_start ASC";
+	$list_query.= " ORDER BY vtiger_activity.activityid ) as t ";
+	$list_query.= " ORDER BY t.date_start,t.time_start ASC";
 	$list_query.= " limit $maxval";
 
 	$res = $adb->query($list_query);

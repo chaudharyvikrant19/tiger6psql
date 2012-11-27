@@ -43,8 +43,8 @@ if($_REQUEST['mail_error'] != '')
 $list_query = getListQuery("Users");
 
 //Postgres 8 fixes
-if( $adb->dbType == "pgsql")
-	$list_query = fixPostgresQuery($list_query, $log, 0);
+//if( $adb->dbType == "pgsql")
+//	$list_query = fixPostgresQuery($list_query, $log, 0);
 
 $userid = array();
 $userid_Query = "SELECT id,user_name FROM vtiger_users WHERE user_name IN ('admin')";
@@ -98,10 +98,10 @@ $navigation_array = VT_getSimpleNavigationValues($start,$list_max_entries_per_pa
 
 $limit_start_rec = ($start-1) * $list_max_entries_per_page;
 
-if( $adb->dbType == "pgsql")
+//if( $adb->dbType == "pgsql")
 	$list_result = $adb->pquery($list_query. " OFFSET $limit_start_rec LIMIT $list_max_entries_per_page", array());
-else
-	$list_result = $adb->pquery($list_query. " LIMIT $limit_start_rec, $list_max_entries_per_page", array());
+//else
+//	$list_result = $adb->pquery($list_query. " LIMIT $limit_start_rec, $list_max_entries_per_page", array());
 
 $recordListRangeMsg = getRecordRangeMessage($list_result, $limit_start_rec,$noofrows);
 $smarty->assign('recordListRange',$recordListRangeMsg);

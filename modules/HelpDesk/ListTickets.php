@@ -27,7 +27,7 @@ function getMyTickets($maxval,$calCnt)
 		"vtiger_troubletickets.ticketid > 0 and vtiger_troubletickets.status <> 'Closed' ".
 		"AND vtiger_crmentity.setype='HelpDesk' ORDER BY createdtime DESC";
 
-	$search_query .= " LIMIT 0," . $adb->sql_escape_string($maxval);
+	$search_query .= " LIMIT " . $adb->sql_escape_string($maxval). " OFFSET 0 ";
 
 
 	if($calCnt == 'calculateCnt') {

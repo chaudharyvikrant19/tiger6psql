@@ -294,10 +294,10 @@ function getFieldListEntries($module) {
 				$cflist[$i]['no']= 0;
 			}
 
-			$query_fields_not_in_block ='select fieldid,fieldlabel,block from vtiger_field ' .
-					'inner join vtiger_blocks on vtiger_field.block=vtiger_blocks.blockid ' .
-					'where vtiger_field.block != ? and vtiger_blocks.blocklabel not in ("LBL_TICKET_RESOLUTION","LBL_COMMENTS","LBL_COMMENT_INFORMATION") ' .
-					'AND vtiger_field.tabid = ? and vtiger_field.displaytype IN (1,2,4) order by vtiger_field.sequence';
+			$query_fields_not_in_block ="select fieldid,fieldlabel,block from vtiger_field " .
+					"inner join vtiger_blocks on vtiger_field.block=vtiger_blocks.blockid " .
+					"where vtiger_field.block != ? and vtiger_blocks.blocklabel not in ('LBL_TICKET_RESOLUTION','LBL_COMMENTS','LBL_COMMENT_INFORMATION') " .
+					"AND vtiger_field.tabid = ? and vtiger_field.displaytype IN (1,2,4) order by vtiger_field.sequence";
 
 			$params =array($row['blockid'],$tabid);
 			$fields = $adb->pquery($query_fields_not_in_block,$params);
@@ -338,7 +338,7 @@ function getFieldListEntries($module) {
  */
 function getListLeadMapping($cfid) {
 	global $adb;
-	$sql='select * from vtiger_convertleadmapping where cfmid = ?';
+	$sql="select * from vtiger_convertleadmapping where cfmid = ?";
 	$result = $adb->pquery($sql, array($cfid));
 	$noofrows = $adb->num_rows($result);
 	for($i =0;$i <$noofrows;$i++) {
@@ -401,7 +401,7 @@ function changeFieldOrder() {
 			$row= $adb->fetch_array($result);
 			$current_sequence=$row[sequence];
 
-			$sql_next="select * from vtiger_blocks where sequence > ? and tabid=? limit 0,1";
+			$sql_next="select * from vtiger_blocks where sequence > ? and tabid=? offset 0 limit 1";
 			$result_next = $adb->pquery($sql_next, array($current_sequence,$_REQUEST[tabid]));
 			$row_next= $adb->fetch_array($result_next);
 			$next_sequence=$row_next[sequence];
@@ -422,7 +422,7 @@ function changeFieldOrder() {
 			$row= $adb->fetch_array($result);
 			$current_sequence=$row[sequence];
 
-			$sql_previous="select * from vtiger_blocks where sequence < ? and tabid=?  order by sequence desc limit 0,1";
+			$sql_previous="select * from vtiger_blocks where sequence < ? and tabid=?  order by sequence desc offset 0 limit 1";
 			$result_previous = $adb->pquery($sql_previous, array($current_sequence,$_REQUEST[tabid]));
 			$row_previous= $adb->fetch_array($result_previous);
 			$previous_sequence=$row_previous[sequence];
@@ -443,10 +443,10 @@ function changeFieldOrder() {
 			$row= $adb->fetch_array($result);
 			$current_sequence=$row['sequence'];
 			if($_REQUEST['what_to_do']=='down') {
-				$sql_next="select * from vtiger_field where sequence > ? and block = ? and vtiger_field.presence in (0,2) order by sequence limit 1,1";
+				$sql_next="select * from vtiger_field where sequence > ? and block = ? and vtiger_field.presence in (0,2) order by sequence offset 1 limit 1";
 				$sql_next_params = array($current_sequence, $_REQUEST['blockid']);
 			}else {
-				$sql_next="select * from vtiger_field where sequence > ? and block = ? and vtiger_field.presence in (0,2) order by sequence limit 0,1";
+				$sql_next="select * from vtiger_field where sequence > ? and block = ? and vtiger_field.presence in (0,2) order by sequence offset 0 limit 1";
 				$sql_next_params = array($current_sequence, $_REQUEST['blockid']);
 			}
 
@@ -470,10 +470,10 @@ function changeFieldOrder() {
 			$current_sequence=$row['sequence'];
 
 			if($_REQUEST['what_to_do']=='up') {
-				$sql_previous="select * from vtiger_field where sequence < ? and block=? and vtiger_field.presence in (0,2) order by sequence desc limit 1,1";
+				$sql_previous="select * from vtiger_field where sequence < ? and block=? and vtiger_field.presence in (0,2) order by sequence desc offset 1 limit 1";
 				$sql_prev_params = array($current_sequence,$_REQUEST['blockid']);
 			}else {
-				$sql_previous="select * from vtiger_field where sequence < ? and block=? and vtiger_field.presence in (0,2) order by sequence desc limit 0,1";
+				$sql_previous="select * from vtiger_field where sequence < ? and block=? and vtiger_field.presence in (0,2) order by sequence desc offset 0 limit 1";
 				$sql_prev_params = array($current_sequence,$_REQUEST['blockid']);
 			}
 
@@ -592,7 +592,7 @@ function updateFieldProperties() {
 	if($oldquickcreate != 3) {
 		if(($quickcreate_checked == 'true' || $quickcreate_checked == '' )) {
 			$qcdata = 2;
-			$quickcreateseq_Query = 'select max(quickcreatesequence) as maxseq from vtiger_field where tabid = ?';
+			$quickcreateseq_Query = "select max(quickcreatesequence) as maxseq from vtiger_field where tabid = ?";
 			$res = $adb->pquery($quickcreateseq_Query,array($tabid));
 			$maxseq = $adb->query_result($res,0,'maxseq');
 
@@ -660,7 +660,7 @@ function deleteCustomField() {
 	$colName = $_REQUEST["colName"];
 	$uitype = $_REQUEST["uitype"];
 
-	$fieldquery = 'select * from vtiger_field where fieldid = ?';
+	$fieldquery = "select * from vtiger_field where fieldid = ?";
 	$res = $adb->pquery($fieldquery,array($id));
 
 	$typeofdata = $adb->query_result($res,0,'typeofdata');
@@ -671,15 +671,15 @@ function deleteCustomField() {
 	$fieldtype =  explode("~",$typeofdata);
 
 	//Deleting the CustomField from the Custom Field Table
-	$query='delete from vtiger_field where fieldid = ? and vtiger_field.presence in (0,2)';
+	$query="delete from vtiger_field where fieldid = ? and vtiger_field.presence in (0,2)";
 	$adb->pquery($query, array($id));
 
 	//Deleting from vtiger_profile2field table
-	$query='delete from vtiger_profile2field where fieldid=?';
+	$query="delete from vtiger_profile2field where fieldid=?";
 	$adb->pquery($query, array($id));
 
 	//Deleting from vtiger_def_org_field table
-	$query='delete from vtiger_def_org_field where fieldid=?';
+	$query="delete from vtiger_def_org_field where fieldid=?";
 	$adb->pquery($query, array($id));
 
 	$focus = CRMEntity::getInstance($fld_module);
@@ -689,11 +689,11 @@ function deleteCustomField() {
 	$select_columnname = $tablename.":".$columnname .":".$fld_module. "_" . str_replace(" ","_",$oldfieldlabel).":".$fieldname.":".$fieldtype[0];
 	$reportsummary_column = $tablename.":".$columnname.":".str_replace(" ","_",$oldfieldlabel);
 
-	$dbquery = 'alter table '. $adb->sql_escape_string($focus->customFieldTable[0]).' drop column '. $adb->sql_escape_string($colName);
+	$dbquery = "alter table ". $adb->sql_escape_string($focus->customFieldTable[0])." drop column ". $adb->sql_escape_string($colName);
 	$adb->pquery($dbquery, array());
 
 	//To remove customfield entry from vtiger_field table
-	$dbquery = 'delete from vtiger_field where columnname= ? and fieldid=? and vtiger_field.presence in (0,2)';
+	$dbquery = "delete from vtiger_field where columnname= ? and fieldid=? and vtiger_field.presence in (0,2)";
 	$adb->pquery($dbquery, array($colName, $id));
 	//we have to remove the entries in customview and report related tables which have this field ($colName)
 	$adb->pquery("delete from vtiger_cvcolumnlist where columnname = ? ", array($deletecolumnname));
@@ -708,7 +708,7 @@ function deleteCustomField() {
 
 	//Deleting from convert lead mapping vtiger_table- Jaguar
 	if($fld_module=="Leads") {
-		$deletequery = 'delete from vtiger_convertleadmapping where leadfid=?';
+		$deletequery = "delete from vtiger_convertleadmapping where leadfid=?";
 		$adb->pquery($deletequery, array($id));
 	}elseif($fld_module=="Accounts" || $fld_module=="Contacts" || $fld_module=="Potentials") {
 		$map_del_id = array("Accounts"=>"accountfid","Contacts"=>"contactfid","Potentials"=>"potentialfid");
@@ -718,7 +718,7 @@ function deleteCustomField() {
 
 	//HANDLE HERE - we have to remove the table for other picklist type values which are text area and multiselect combo box
 	if($uitype == 15) {
-		$deltablequery = 'drop table vtiger_'.$adb->sql_escape_string($colName);
+		$deltablequery = "drop table vtiger_".$adb->sql_escape_string($colName);
 		$adb->pquery($deltablequery, array());
 		$adb->pquery("delete from  vtiger_picklist_dependency where sourcefield=? or targetfield=?", array($colName,$colName));
 	}
@@ -776,7 +776,7 @@ function addblock() {
 function deleteBlock() {
 	global $adb;
 	$blockid = $_REQUEST['blockid'];
-	$deleteblock = 'delete from vtiger_blocks where blockid = ? and iscustom = 1';
+	$deleteblock = "delete from vtiger_blocks where blockid = ? and iscustom = 1";
 	$res = $adb->pquery($deleteblock,array($blockid));
 
 }
@@ -997,19 +997,19 @@ function show_move_hiddenfields($submode) {
 	$selected = trim($selected_fields,":");
 	$sel_arr = array();
 	$sel_arr = explode(":",$selected);
-	$sequence = $adb->pquery('select max(sequence) as maxseq from vtiger_field where block = ?  and tabid = ?',array($_REQUEST['blockid'],$_REQUEST['tabid']));
+	$sequence = $adb->pquery("select max(sequence) as maxseq from vtiger_field where block = ?  and tabid = ?",array($_REQUEST['blockid'],$_REQUEST['tabid']));
 	$max = $adb->query_result($sequence,0,'maxseq');
 	$max_seq = $max + 1;
 
 	if($submode == 'showhiddenfields') {
 		for($i=0; $i< count($sel_arr);$i++) {
-			$res = $adb->pquery('update vtiger_field set presence = 2,sequence = ? where block = ? and fieldid = ?', array($max_seq,$_REQUEST['blockid'],$sel_arr[$i]));
+			$res = $adb->pquery("update vtiger_field set presence = 2,sequence = ? where block = ? and fieldid = ?", array($max_seq,$_REQUEST['blockid'],$sel_arr[$i]));
 			$max_seq++;
 		}
 	}
 	else {
 		for($i=0; $i< count($sel_arr);$i++) {
-			$res = $adb->pquery('update vtiger_field set sequence = ? , block = ? where fieldid = ?', array($max_seq,$_REQUEST['blockid'],$sel_arr[$i]));
+			$res = $adb->pquery("update vtiger_field set sequence = ? , block = ? where fieldid = ?", array($max_seq,$_REQUEST['blockid'],$sel_arr[$i]));
 			$max_seq++;
 		}
 	}
@@ -1018,8 +1018,8 @@ function show_move_hiddenfields($submode) {
 function getRelatedListInfo($module) {
 	global $adb;
 	$tabid = getTabid($module);
-	$related_query = 'select * from vtiger_relatedlists ' .
-			'inner join vtiger_tab on vtiger_relatedlists.related_tabid = vtiger_tab.tabid and vtiger_tab.presence = 0 where vtiger_relatedlists.tabid = ? order by sequence';
+	$related_query = "select * from vtiger_relatedlists " .
+			"inner join vtiger_tab on vtiger_relatedlists.related_tabid = vtiger_tab.tabid and vtiger_tab.presence = 0 where vtiger_relatedlists.tabid = ? order by sequence";
 	$relinfo = $adb->pquery($related_query,array($tabid));
 	$noofrows = $adb->num_rows($relinfo);
 	for($i=0;$i<$noofrows;$i++) {
@@ -1043,22 +1043,22 @@ function changeRelatedListOrder() {
 		if($_REQUEST['what_to_do'] == 'move_up') {
 			$currentsequence = $_REQUEST['sequence'];
 
-			$previous_relation = $adb->pquery('select relation_id,sequence from vtiger_relatedlists where sequence < ? and tabid = ? order by sequence desc limit 0,1',array($currentsequence,$tabid));
+			$previous_relation = $adb->pquery("select relation_id,sequence from vtiger_relatedlists where sequence < ? and tabid = ? order by sequence desc offset 0 limit 1 ",array($currentsequence,$tabid));
 			$previous_sequence = $adb->query_result($previous_relation,0,'sequence');
 			$previous_relationid = $adb->query_result($previous_relation,0,'relation_id');
 
-			$adb->pquery('update vtiger_relatedlists set sequence = ? where relation_id = ? and tabid = ?',array($previous_sequence,$_REQUEST['id'],$tabid));
-			$adb->pquery('update vtiger_relatedlists set sequence = ? where tabid = ? and relation_id = ?',array($currentsequence,$tabid,$previous_relationid));
+			$adb->pquery("update vtiger_relatedlists set sequence = ? where relation_id = ? and tabid = ?",array($previous_sequence,$_REQUEST['id'],$tabid));
+			$adb->pquery("update vtiger_relatedlists set sequence = ? where tabid = ? and relation_id = ?",array($currentsequence,$tabid,$previous_relationid));
 		}elseif($_REQUEST['what_to_do'] == 'move_down') {
 
 			$currentsequence = $_REQUEST['sequence'];
 
-			$next_relation = $adb->pquery('select relation_id,sequence from vtiger_relatedlists where sequence > ? and tabid = ? order by sequence limit 0,1',array($currentsequence,$tabid));
+			$next_relation = $adb->pquery("select relation_id,sequence from vtiger_relatedlists where sequence > ? and tabid = ? order by sequence offset 0 limit 1 ",array($currentsequence,$tabid));
 			$next_sequence = $adb->query_result($next_relation,0,'sequence');
 			$next_relationid = $adb->query_result($next_relation,0,'relation_id');
 
-			$adb->pquery('update vtiger_relatedlists set sequence = ? where relation_id = ? and tabid = ?',array($next_sequence,$_REQUEST['id'],$tabid));
-			$adb->pquery('update vtiger_relatedlists set sequence = ? where tabid = ? and relation_id = ?',array($currentsequence,$tabid,$next_relationid));
+			$adb->pquery("update vtiger_relatedlists set sequence = ? where relation_id = ? and tabid = ?",array($next_sequence,$_REQUEST['id'],$tabid));
+			$adb->pquery("update vtiger_relatedlists set sequence = ? where tabid = ? and relation_id = ?",array($currentsequence,$tabid,$next_relationid));
 
 		}
 	}

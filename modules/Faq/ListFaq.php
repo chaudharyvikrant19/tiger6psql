@@ -73,7 +73,7 @@ function getMyFaq($maxval,$calCnt)
 
 	//<<<<<<<<customview>>>>>>>>>
 
-	$query .= " LIMIT 0," . $adb->sql_escape_string($maxval);
+	$query .= " LIMIT " . $adb->sql_escape_string($maxval) . " OFFSET 0";
 
 	if($calCnt == 'calculateCnt') {
 		$list_result_rows = $adb->query(mkCountQuery($query));

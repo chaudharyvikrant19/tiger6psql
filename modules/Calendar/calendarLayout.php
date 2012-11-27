@@ -1367,24 +1367,24 @@ function getEventList(& $calendar,$start_date,$end_date,$info='')
 	$and = "AND (
 					(
 						(
-							(CAST(CONCAT(date_start,' ',time_start) AS DATETIME) >= ? AND CAST(CONCAT(date_start,' ',time_start) AS DATETIME) <= ?)
-							OR	(CAST(CONCAT(due_date,' ',time_end) AS DATETIME) >= ? AND CAST(CONCAT(due_date,' ',time_end) AS DATETIME) <= ? )
-							OR	(CAST(CONCAT(date_start,' ',time_start) AS DATETIME) <= ? AND CAST(CONCAT(due_date,' ',time_end) AS DATETIME) >= ?)
+							(to_timestamp(date_start || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') >= ? AND to_timestamp(date_start ||' ' ||time_start, 'YYYY-MM-DD HH24:MI:SS') <= ?)
+							OR	(to_timestamp(due_date || ' ' || time_end, 'YYYY-MM-DD HH24:MI:SS') >= ? AND to_timestamp(due_date ||' ' ||time_end, 'YYYY-MM-DD HH24:MI:SS') <= ? )
+							OR	(to_timestamp(date_start || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') <= ? AND to_timestamp(due_date ||' ' ||time_end, 'YYYY-MM-DD HH24:MI:SS') >= ?)
 						)
 						AND vtiger_recurringevents.activityid is NULL
 					)
 				OR (
-						(CAST(CONCAT(vtiger_recurringevents.recurringdate,' ',time_start) AS DATETIME) >= ?
-							AND CAST(CONCAT(vtiger_recurringevents.recurringdate,' ',time_start) AS DATETIME) <= ?)
-						OR	(CAST(CONCAT(due_date,' ',time_end) AS DATETIME) >= ? AND CAST(CONCAT(due_date,' ',time_end) AS DATETIME) <= ?)
-						OR	(CAST(CONCAT(vtiger_recurringevents.recurringdate,' ',time_start) AS DATETIME) <= ?
-							AND CAST(CONCAT(due_date,' ',time_end) AS DATETIME) >= ?)
+						(to_timestamp(vtiger_recurringevents.recurringdate || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') >= ?
+							AND to_timestamp(vtiger_recurringevents.recurringdate || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') <= ?)
+						OR	(to_timestamp(due_date || ' ' ||time_end, 'YYYY-MM-DD HH24:MI:SS') >= ? AND to_timestamp(due_date || ' ' ||time_end, 'YYYY-MM-DD HH24:MI:SS') <= ?)
+						OR	(to_timestamp(vtiger_recurringevents.recurringdate || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') <= ?
+							AND to_timestamp(due_date || ' ' ||time_end, 'YYYY-MM-DD HH24:MI:SS') >= ?)
 					)
 				)";
 
 	$userNameSql = getSqlForNameInDisplayFormat(array('first_name'=>
 							'vtiger_users.first_name', 'last_name' => 'vtiger_users.last_name'), 'Users');
-	$query = "SELECT vtiger_groups.groupname, $userNameSql as user_name,vtiger_crmentity.smownerid, vtiger_crmentity.crmid,
+	$query = "select * from ( SELECT distinct on (vtiger_activity.activityid) vtiger_groups.groupname, $userNameSql as user_name,vtiger_crmentity.smownerid, vtiger_crmentity.crmid,
        		vtiger_activity.* FROM vtiger_activity
 		INNER JOIN vtiger_crmentity
 			ON vtiger_crmentity.crmid = vtiger_activity.activityid
@@ -1422,10 +1422,10 @@ function getEventList(& $calendar,$start_date,$end_date,$info='')
 
 			$com_q = " AND (vtiger_crmentity.smownerid = ?
 					OR vtiger_groups.groupid in (". generateQuestionMarks($groupids) ."))
-					GROUP BY vtiger_activity.activityid";
+					order BY vtiger_activity.activityid ) as t ";
 		} else {			
 			$com_q = " AND vtiger_crmentity.smownerid = ?
-				GROUP BY vtiger_activity.activityid";
+				order BY vtiger_activity.activityid ) as t ";
 		}
 			
 		$pending_query = $query." AND (vtiger_activity.eventstatus = 'Planned')".$com_q;
@@ -1454,7 +1454,7 @@ function getEventList(& $calendar,$start_date,$end_date,$info='')
 		$search_where = calendar_search_where($_REQUEST['field_name'],$_REQUEST['search_option'],$_REQUEST['search_text']);
 		$group_cond .= $search_where;
 	}
-	$group_cond .= " GROUP BY vtiger_activity.activityid ORDER BY vtiger_activity.date_start,vtiger_activity.time_start ASC";
+	$group_cond .= " order BY vtiger_activity.activityid ) as t ORDER BY t.date_start,t.time_start ASC";
 
 	//Ticket 6476
 	if(PerformancePrefs::getBoolean('LISTVIEW_COMPUTE_PAGE_COUNT', false) === true){
@@ -1484,11 +1484,11 @@ function getEventList(& $calendar,$start_date,$end_date,$info='')
         
         if($start_rec < 0)
 		$start_rec = 0;
-	$query .= $group_cond." limit $start_rec,$list_max_entries_per_page";
+	$query .= $group_cond." limit $list_max_entries_per_page offset $start_rec ";
 
- 	if( $adb->dbType == "pgsql"){
- 	    $query = fixPostgresQuery($query, $log, 0);
- 	}
+ 	//if( $adb->dbType == "pgsql"){
+ 	//    $query = fixPostgresQuery($query, $log, 0);
+ 	//}
 
 	
         
@@ -1651,9 +1651,9 @@ function getTodoList(& $calendar,$start_date,$end_date,$info='')
 					ON vtiger_users.id = vtiger_crmentity.smownerid";
 	$query .= getNonAdminAccessControlQuery('Calendar',$current_user);
 	$query .= "WHERE vtiger_crmentity.deleted = 0 AND vtiger_activity.activitytype = 'Task'".
-					" AND ((CAST(CONCAT(date_start,' ',time_start) AS DATETIME) >= ? AND CAST(CONCAT(date_start,' ',time_start) AS DATETIME) <= ?)
-							OR	(CAST(CONCAT(due_date,' ',time_end) AS DATETIME) >= ? AND CAST(CONCAT(due_date,' ',time_end) AS DATETIME) <= ? )
-							OR	(CAST(CONCAT(date_start,' ',time_start) AS DATETIME) <= ? AND CAST(CONCAT(due_date,' ',time_end) AS DATETIME) >= ?)
+					" AND ((to_timestamp(date_start || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') >= ? AND to_timestamp(date_start || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') <= ?)
+							OR	(to_timestamp(due_date || ' ' || time_end, 'YYYY-MM-DD HH24:MI:SS') >= ? AND to_timestamp(due_date || ' ' || time_end, 'YYYY-MM-DD HH24:MI:SS') <= ? )
+							OR	(to_timestamp(date_start || ' ' || time_start, 'YYYY-MM-DD HH24:MI:SS') <= ? AND to_timestamp(due_date || ' ' || time_end, 'YYYY-MM-DD HH24:MI:SS') >= ?)
 						)";
 
 	$list_query = $query." AND vtiger_crmentity.smownerid = "  . $current_user->id;
@@ -1681,11 +1681,11 @@ function getTodoList(& $calendar,$start_date,$end_date,$info='')
 
 			$pending_query = $query." AND (vtiger_activity.status != 'Completed')".$com_q;
 			$total_q =  $query."".$com_q;
-			if( $adb->dbType == "pgsql")
-			{
- 		    	$pending_query = fixPostgresQuery( $pending_query, $log, 0);
-		    	$total_q = fixPostgresQuery( $total_q, $log, 0);
-			}
+			//if( $adb->dbType == "pgsql")
+			//{
+ 		    //	$pending_query = fixPostgresQuery( $pending_query, $log, 0);
+		    //	$total_q = fixPostgresQuery( $total_q, $log, 0);
+			//}
 			$total_res = $adb->pquery($total_q, $info_params);
 			$total = $adb->num_rows($total_res);
                 
@@ -1723,11 +1723,11 @@ function getTodoList(& $calendar,$start_date,$end_date,$info='')
 		$start_rec = 0;
 
 	//ends
-	$query .= $group_cond." limit $start_rec,$list_max_entries_per_page";
+	$query .= $group_cond." offset $start_rec limit $list_max_entries_per_page";
 
-	if( $adb->dbType == "pgsql"){
- 	    $query = fixPostgresQuery( $query, $log, 0);
-	}
+	//if( $adb->dbType == "pgsql"){
+ 	//    $query = fixPostgresQuery( $query, $log, 0);
+	//}
 
     $result = $adb->pquery($query, $params);
     $rows = $adb->num_rows($result);

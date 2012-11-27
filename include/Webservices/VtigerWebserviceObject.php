@@ -74,6 +74,13 @@ class VtigerWebserviceObject{
 		
 		// If the information not available in cache?
 		if(!isset(self::$_fromIdCache[$entityId])) {
+			$position = stripos($entityId, "x");
+			if ($position !== false ) {
+				$tmp = substr($entityId, 0, $position);
+				$entityId = $tmp;
+   				//$tmp = str_replace("x", "*", $entityId );
+				//eval("\$entityId = $tmp;");
+			}
 			$result = $adb->pquery("select * from vtiger_ws_entity where id=?",array($entityId));
 			if($result){
 				$rowCount = $adb->num_rows($result);

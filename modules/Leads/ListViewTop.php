@@ -53,13 +53,13 @@ function getNewLeads($maxval,$calCnt) {
 	$userStartDateTime = new DateTimeField($userStartDate.' 00:00:00');
 	$startDateTime = $userStartDateTime->getDBInsertDateTimeValue();
 
-	$list_query = 'select vtiger_leaddetails.firstname, vtiger_leaddetails.lastname, vtiger_leaddetails.leadid, vtiger_leaddetails.company
+	$list_query = "select vtiger_leaddetails.firstname, vtiger_leaddetails.lastname, vtiger_leaddetails.leadid, vtiger_leaddetails.company
 		from vtiger_leaddetails inner join vtiger_crmentity on vtiger_leaddetails.leadid = vtiger_crmentity.crmid
 		where vtiger_crmentity.deleted =0 AND vtiger_leaddetails.converted =0 AND vtiger_leaddetails.leadid > 0 AND
-		vtiger_leaddetails.leadstatus not in ("Lost Lead", "Junk Lead","'.$current_module_strings['Lost Lead'].'","'.$current_module_strings['Junk Lead'].'")
-		AND vtiger_crmentity.createdtime >=? AND vtiger_crmentity.smownerid = ?';
+		vtiger_leaddetails.leadstatus not in ('Lost Lead', 'Junk Lead','".$current_module_strings['Lost Lead']."','".$current_module_strings['Junk Lead']."')
+		AND vtiger_crmentity.createdtime >=? AND vtiger_crmentity.smownerid = ?";
 
-	$list_query .= " LIMIT 0," . $adb->sql_escape_string($maxval);
+	$list_query .= " LIMIT " . $adb->sql_escape_string($maxval). " OFFSET 0 ";
 
 	if($calCnt == 'calculateCnt') {
 		$list_result_rows = $adb->pquery(mkCountQuery($list_query), array($startDateTime, $current_user->id));

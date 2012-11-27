@@ -163,6 +163,10 @@ class Vtiger_FieldBasic {
 		}
 
 		if(!$this->label) $this->label = $this->name;
+		$quick_seq = $this->quicksequence;
+		if($quick_seq == "") {
+			$quick_seq = "0";		
+		}
 
 		$adb->pquery("INSERT INTO vtiger_field (tabid, fieldid, columnname, tablename, generatedtype,
 			uitype, fieldname, fieldlabel, readonly, presence, defaultvalue, maximumlength, sequence,

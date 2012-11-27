@@ -176,9 +176,10 @@ class Vtiger_Utils {
 		if($suffixTableMeta !== false) {
 			if($suffixTableMeta === true) {
 				if($adb->isMySQL()) {
-					$suffixTableMeta = ' ENGINE=InnoDB DEFAULT CHARSET=utf8';
+					$suffixTableMeta = " ENGINE=InnoDB DEFAULT CHARSET=utf8";
 				} else {
 					// TODO Handle other database types.
+					$suffixTableMeta = " ";
 				}
 			}
 			$sql .= $suffixTableMeta;
@@ -221,10 +222,119 @@ class Vtiger_Utils {
 
 		if($supressdie) $adb->dieOnError = false;
 
+		if($adb->isPostgres()) {
+			$sqlquery = self::ConvertPsqlCreateQuery($sqlquery);		
+		}
 		$adb->query($sqlquery);
 
 		$adb->dieOnError = $old_dieOnError;
 	}
+
+	/*
+	 * Convert SQL query to be Postgresql compliant
+	 */
+	static function ConvertPsqlCreateQuery($sqlquery) {
+		
+		$pg_query = strtoupper($sqlquery);
+		if(preg_match('/(CREATE TABLE)/', $pg_query)) {
+		
+   			$pg_query = str_replace("`", "", $pg_query );
+    		$pg_query = str_replace("INT(11) NOT NULL AUTO_INCREMENT", "SERIAL NOT NULL", $pg_query );
+    		$pg_query = str_replace("INT(19) NOT NULL AUTO_INCREMENT", "SERIAL NOT NULL", $pg_query );
+    		$pg_query = str_replace("INT NOT NULL PRIMARY KEY AUTO_INCREMENT", "SERIAL NOT NULL PRIMARY KEY", $pg_query );
+   			$pg_query = str_replace("INT(11)", "INTEGER", $pg_query );
+   			$pg_query = str_replace("INT(10)", "INTEGER", $pg_query );
+   			$pg_query = str_replace("INT(1)", "INTEGER", $pg_query );
+   			$pg_query = str_replace("INT(19)", "INTEGER", $pg_query );
+   			$pg_query = str_replace("DATETIME", "TIMESTAMP", $pg_query );
+		
+			// Remove everything after ENGINE
+			$pos = strpos( $pg_query, "ENGINE=");
+			if($pos !== false) {
+				$pg_query = substr($pg_query, 0, $pos);
+			}
+			
+			$tok = strtok($pg_query, ",");
+			$result_query = "";
+			$key = "";
+			$isKeyTag = false;
+			while ($tok !== false) {
+				if(self::StringStartWith(trim($tok), "KEY")) {
+					// To be enhanced later to handle index creation
+					// Current simply strip off all key definition
+    				$key = $tok;
+					$pos = strpos( $tok, ")");
+					if($pos == false) {
+						$isKeyTag = true;
+					}
+				} else if(self::StringStartWith(trim($tok), "UNIQUE KEY")) {
+					// Skip the unique index tag
+					$pos = strpos( $tok, "(");
+					if($pos !== false) {
+						$tok = substr($tok, $pos+1);
+					}
+					$pos = strpos( $tok, ")");
+					if($pos !== false) {
+						$tok = substr($tok, 0, $pos);
+					}
+					
+					$result_query .= ",UNIQUE(".$tok.")";
+				} else if($isKeyTag) {
+					$pos = strpos( $tok, ")");
+					if($pos !== false) {
+						$isKeyTag = false;						
+					}
+				} else if (strpos($tok, "FK_3_VTIGER_WEBFORMS_FIELD") !== false) {
+					// skip
+				} else {
+					// Strip off "UNIQUE KEY"
+					if(self::StringEndWith(trim($tok), "UNIQUE KEY")) {
+						$pos = strpos( $tok, "UNIQUE KEY");
+						if($pos !== false) {
+							$tok = substr($tok, 0, $pos);
+						}
+					}
+					
+					if($result_query == "") {
+						$result_query .= $tok;
+					} else {
+						$result_query .= ",".$tok;
+					}
+				}
+   		 		$tok = strtok(",");
+			}
+			
+			// Check if the query ends with )
+			$open_brace_count = substr_count($result_query, '(');
+			$close_brace_count = substr_count($result_query, ')');
+			
+			while($open_brace_count > $close_brace_count) {
+				$result_query .= ")";
+				$close_brace_count += 1;
+			}
+	
+			return $result_query;
+		} else {
+			return $sqlquery;
+		}
+	}
+	
+	static function StringStartWith($string, $prefix, $caseSensitive = false) {
+		if(!$caseSensitive) {
+			return stripos($string, $prefix, 0) === 0;
+		}
+		return strpos($string, $prefix, 0) === 0;
+	}
+	
+	static function StringEndWith($string, $postfix, $caseSensitive = false) {
+		$expectedPostition = strlen($string) - strlen($postfix);
+	
+		if(!$caseSensitive) {
+			return strripos($string, $postfix, 0) === $expectedPostition;
+		}
+		return strrpos($string, $postfix, 0) === $expectedPostition;
+	}
+
 
 	/**
 	 * Get CREATE SQL for given table

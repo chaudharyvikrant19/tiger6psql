@@ -43,13 +43,20 @@ class Vtiger_Field extends Vtiger_FieldBasic {
 		$picklist_table = 'vtiger_'.$this->name;
 		$picklist_idcol = $this->name.'id';
 		if(!Vtiger_Utils::CheckTable($picklist_table)) {
-			Vtiger_Utils::CreateTable(
-				$picklist_table,
-				"($picklist_idcol INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-				$this->name VARCHAR(200) NOT NULL,
-				presence INT (1) NOT NULL DEFAULT 1,
-				picklist_valueid INT NOT NULL DEFAULT 0)",
-				true);
+			//Vtiger_Utils::CreateTable(
+			//	$picklist_table,
+			//	"($picklist_idcol INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			//	$this->name VARCHAR(200) NOT NULL,
+			//	presence INT (1) NOT NULL DEFAULT 1,
+			//	picklist_valueid INT NOT NULL DEFAULT 0)",
+			//	true);
+				Vtiger_Utils::CreateTable(
+					$picklist_table,
+					"($picklist_idcol SERIAL NOT NULL PRIMARY KEY,
+					$this->name VARCHAR(200) NOT NULL,
+					presence INT NOT NULL DEFAULT 1,
+					picklist_valueid INT NOT NULL DEFAULT 0)", 
+					true);
 			$new_picklistid = $this->__getPicklistUniqueId();
 			$adb->pquery("INSERT INTO vtiger_picklist (picklistid,name) VALUES(?,?)",Array($new_picklistid, $this->name));
 			self::log("Creating table $picklist_table ... DONE");
@@ -104,13 +111,20 @@ class Vtiger_Field extends Vtiger_FieldBasic {
 		$picklist_idcol = $this->name.'id';
 
 		if(!Vtiger_Utils::CheckTable($picklist_table)) {
-			Vtiger_Utils::CreateTable(
-				$picklist_table,
-				"($picklist_idcol INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-				$this->name VARCHAR(200) NOT NULL,
-				sortorderid INT(11),
-				presence INT (11) NOT NULL DEFAULT 1)",
-				true);
+			//Vtiger_Utils::CreateTable(
+			//	$picklist_table,
+			//	"($picklist_idcol INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			//	$this->name VARCHAR(200) NOT NULL,
+			//	sortorderid INT(11),
+			//	presence INT (11) NOT NULL DEFAULT 1)",
+			//	true);
+				Vtiger_Utils::CreateTable(
+					$picklist_table,
+					"($picklist_idcol SERIAL NOT NULL PRIMARY KEY,
+					$this->name VARCHAR(200) NOT NULL,
+					sortorderid INT,
+					presence INT NOT NULL DEFAULT 1)", 
+					true);
 			self::log("Creating table $picklist_table ... DONE");
 		}
 
@@ -213,10 +227,10 @@ class Vtiger_Field extends Vtiger_FieldBasic {
 		$query = false;
 		$queryParams = false;
 		if($moduleInstance) {
-			$query = "SELECT * FROM vtiger_field WHERE block=? AND tabid=? ORDER BY sequence";
+			$query = "SELECT * FROM vtiger_field WHERE block=? AND tabid=?";
 			$queryParams = Array($blockInstance->id, $moduleInstance->id);
 		} else {
-			$query = "SELECT * FROM vtiger_field WHERE block=? ORDER BY sequence";
+			$query = "SELECT * FROM vtiger_field WHERE block=?";
 			$queryParams = Array($blockInstance->id);
 		}
 		$result = $adb->pquery($query, $queryParams);

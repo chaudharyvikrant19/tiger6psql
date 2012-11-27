@@ -546,7 +546,8 @@ function getAdvSearchfields($module)
 
 	if($is_admin == true || $profileGlobalPermission[1] == 0 || $profileGlobalPermission[2] == 0)
 	{
-		$sql = "select * from vtiger_field ";
+//		$sql = "select * from vtiger_field ";
+		$sql = "select * from ( select distinct on (vtiger_field.fieldlabel) * from vtiger_field ";
 		$sql.= " where vtiger_field.tabid in(?) and";
 		$sql.= " vtiger_field.displaytype in (1,2,3) and vtiger_field.presence in (0,2)";
 		if($tabid == 13 || $tabid == 15)
@@ -569,14 +570,16 @@ function getAdvSearchfields($module)
 		{
 			$sql.= " and vtiger_field.fieldlabel != 'Attachment'";
 		}
-		$sql.= " group by vtiger_field.fieldlabel order by block,sequence";
+		//$sql.= " group by vtiger_field.fieldlabel order by block,sequence";
+		$sql.= " order by vtiger_field.fieldlabel ) as t order by t.block,t.sequence";
 
 		$params = array($tabid);
 	}
 	else
 	{
 		$profileList = getCurrentUserProfileList();
-		$sql = "select * from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid ";
+		//$sql = "select * from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid ";
+		$sql = "select * from ( select distinct on (vtiger_field.fieldlabel) * from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid ";
 		$sql.= " where vtiger_field.tabid in(?) and";
 		$sql.= " vtiger_field.displaytype in (1,2,3) and vtiger_field.presence in (0,2) and vtiger_profile2field.visible=0 and vtiger_def_org_field.visible=0";
 
@@ -607,7 +610,8 @@ function getAdvSearchfields($module)
 		{
 			$sql.= " and vtiger_field.fieldlabel != 'Attachment'";
 		}
-		$sql .= " group by vtiger_field.fieldlabel order by block,sequence";
+		//$sql .= " group by vtiger_field.fieldlabel order by block,sequence";
+		$sql .= " order by vtiger_field.fieldlabel ) as t order by t.block,t.sequence";
 	}
 
 	$result = $adb->pquery($sql, $params);

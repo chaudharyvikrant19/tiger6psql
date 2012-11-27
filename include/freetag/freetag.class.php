@@ -177,7 +177,7 @@ class freetag {
 			FROM ${prefix}freetagged_objects INNER JOIN ${prefix}freetags ON (tag_id = id)
 			WHERE $where
 			ORDER BY object_id ASC
-			LIMIT $offset, $limit";
+			LIMIT $limit OFFSET $offset ";
         echo $sql;
 		$rs = $adb->pquery($sql, $params) or die("Error: $sql");
 		$retarr = array();
@@ -283,7 +283,7 @@ class freetag {
 			$tagger_sql
 			GROUP BY ${prefix}freetagged_objects.object_id
 			HAVING uniques = $numTags
-			LIMIT $offset, $limit";
+			LIMIT $limit OFFSET $offset";
 		$this->debug_text("Tag combo: " . join("+", $tagArray) . " SQL: $sql");
 		$rs = $adb->pquery($sql, $params) or die("Error: $sql");
 		while(!$rs->EOF) {
@@ -329,7 +329,7 @@ class freetag {
 			FROM ${prefix}freetagged_objects INNER JOIN ${prefix}freetags ON (tag_id = id)
 			WHERE $where
 			ORDER BY object_id ASC
-			LIMIT $offset, $limit ";
+			LIMIT $limit OFFSET $offset ";
 		$rs = $adb->pquery($sql, $params) or die("Error: $sql");
 		$retarr = array();
 		while(!$rs->EOF) {
@@ -375,7 +375,7 @@ class freetag {
 		if($limit <= 0) {
 			$limit_sql = "";
 		} else {
-			$limit_sql = "LIMIT $offset, $limit";
+			$limit_sql = "LIMIT $limit OFFSET $offset ";
 		}
 		$prefix = $this->_table_prefix;
 
@@ -807,7 +807,7 @@ class freetag {
 			$tagger_sql
 			GROUP BY tag
 			ORDER BY count DESC, tag ASC
-			LIMIT $offset, $limit";
+			LIMIT $limit OFFSET $offset ";
 
 		$rs = $adb->pquery($sql, $params) or die("Syntax Error: $sql");
 		$retarr = array();
@@ -975,8 +975,8 @@ class freetag {
 			ON (${prefix}freetags.id = tag_id)
 			WHERE 1=1
 			$tagger_sql
-			GROUP BY tag
-			ORDER BY quantity DESC LIMIT 0, $max";
+			GROUP BY tag, tag_id
+			ORDER BY quantity DESC LIMIT $max OFFSET 0";
         //echo $sql;
 		$rs = $adb->pquery($sql, $params) or die("Syntax Error: $sql");
 		$retarr = array();
@@ -1039,7 +1039,7 @@ class freetag {
 			WHERE t2.tag = ? AND t1.tag != ?
 			GROUP BY o1.tag_id
 			ORDER BY quantity DESC
-			LIMIT 0, ?";
+			LIMIT ? OFFSET 0";
 
 		$rs = $adb->pquery($sql, array($tag, $tag, $max)) or die("Syntax Error: $sql");
 		while(!$rs->EOF) {
@@ -1116,7 +1116,7 @@ class freetag {
 			GROUP BY matches.object_id
 			HAVING num_common_tags >= ?
 			ORDER BY num_common_tags DESC
-			LIMIT 0, ? ";
+			LIMIT ? OFFSET 0 ";
 
 		$rs = $adb->pquery($sql, array($tagArray, $threshold, $max_objects)) or die("Syntax Error: $sql, Error: " . $adb->ErrorMsg());
 		while(!$rs->EOF) {

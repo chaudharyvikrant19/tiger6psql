@@ -494,6 +494,15 @@ class PearDatabase{
 			if(is_array($value)) {
 				$output = $this->flatten_array($value, $output);
 			} else {
+				/**
+				 *  Postgresql does not support '0000-00-00 00:00:00', so
+				 *  replace it with '1900-01-01 00:00:00'
+				 */
+				if( $this->isPostgres() && strcmp($value,'0000-00-00 00:00:00') == 0) {
+					
+					array_push($output, '1900-01-01 00:00:00');
+					continue;
+				}
 				array_push($output, $value);
 			}
 		}
@@ -1147,11 +1156,27 @@ class PearDatabase{
 		}
 		return $dbName;
 	}
+
+	// Function to convert "" to 0 for numeric field
+	function convert2Numeric( $a ) {
+
+		if( $a == "" ) {
+			return 0;
+		} else {
+			return $a;
+		}
+
+	}
 } /* End of class */
 
 if(empty($adb)) {
 	$adb = new PearDatabase();
 	$adb->connect();
+	
+	/*
+	 * TODO: Remove for production
+	 */
+	//$adb->setDebug(true);
 }
 //$adb->database->setFetchMode(ADODB_FETCH_NUM);
 
