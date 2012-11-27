@@ -192,7 +192,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		ListViewSession::setSessionQuery($moduleName, $listQuery, $viewid);
 
 		$listQueryWithNoLimit = $listQuery;
-		$listQuery .= " LIMIT $startIndex, $pageLimit";
+		$listQuery .= " OFFSET $startIndex LIMIT $pageLimit";
 
 		$listResult = $db->pquery($listQuery, array());
 
@@ -201,7 +201,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		$pagingModel->calculatePageRange($listViewEntries);
 
 		//To check if next page exists
-		$nextLimitQuery = $listQueryWithNoLimit. ' LIMIT '.($startIndex+$pageLimit).' , 1';
+		$nextLimitQuery = $listQueryWithNoLimit. ' OFFSET '.($startIndex+$pageLimit).' LIMIT 1';
 		$nextPageLimitResult = $db->pquery($nextLimitQuery, array());
 		if($db->num_rows($nextPageLimitResult) > 0){
 			$pagingModel->set('nextPageExists', true);
