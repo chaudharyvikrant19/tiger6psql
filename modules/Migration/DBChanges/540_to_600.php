@@ -13,7 +13,7 @@ $adb = PearDatabase::getInstance();
 
 if (!defined('INSTALLATION_MODE')) {
 	$adb->pquery("CREATE TABLE IF NOT EXISTS com_vtiger_workflow_tasktypes (
-						id int(11) NOT NULL,
+						id int8 NOT NULL,
 						tasktypename varchar(255) NOT NULL,
 						label varchar(255),
 						classname varchar(255),
@@ -21,7 +21,7 @@ if (!defined('INSTALLATION_MODE')) {
 						templatepath varchar(255),
 						modules text(500),
 						sourcemodule varchar(255)
-				) ENGINE=InnoDB DEFAULT CHARSET=utf8", array());
+				)", array());
 
 	$taskTypes = array();
 	$defaultModules = array('include' => array(), 'exclude'=>array());
@@ -427,7 +427,7 @@ $adb->pquery("UPDATE vtiger_picklist_dependency SET sourcevalue=? WHERE sourceva
 //Internationalized the description for webforms
 $adb->pquery("UPDATE vtiger_settings_field SET description=? WHERE description=?", array('LBL_WEBFORMS_DESCRIPTION', 'Allows you to manage Webforms'));
 
-$adb->pquery('CREATE TABLE IF NOT EXISTS vtiger_crmsetup(userid INT(11) NOT NULL, setup_status INT(2))', array());
+$adb->pquery('CREATE TABLE IF NOT EXISTS vtiger_crmsetup(userid INT8 NOT NULL, setup_status INT)', array());
 
 $result = $adb->pquery('SELECT id FROM vtiger_users', array());
 $num_rows = $adb->num_rows($result);
@@ -593,8 +593,8 @@ $pickListValues = array('--None--', 'Open', 'In Progress', 'Completed', 'Deferre
 $fieldInstance->setPicklistValues($pickListValues);
 
 //Dashboard schema changes
-Vtiger_Utils::CreateTable('vtiger_module_dashboard_widgets', '(id INT(19) NOT NULL AUTO_INCREMENT, linkid INT(19), userid INT(19), filterid INT(19),
-				title VARCHAR(100), data VARCHAR(500) DEFAULT "[]", PRIMARY KEY(id))');
+Vtiger_Utils::CreateTable('vtiger_module_dashboard_widgets', "(id SERIAL NOT NULL, linkid INT8, userid INT8, filterid INT8,
+				title VARCHAR(100), data VARCHAR(500) DEFAULT '[]', PRIMARY KEY(id))");
 $potentials = Vtiger_Module::getInstance('Potentials');
 $potentials->addLink('DASHBOARDWIDGET', 'History', 'index.php?module=Potentials&view=ShowWidget&name=History','', '1');
 $potentials->addLink('DASHBOARDWIDGET', 'Upcoming Activities', 'index.php?module=Potentials&view=ShowWidget&name=CalendarActivities','', '2');

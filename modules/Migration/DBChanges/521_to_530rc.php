@@ -117,8 +117,7 @@ ExecuteQuery("UPDATE vtiger_field SET defaultvalue='' WHERE defaultvalue='0'");
 
 // Scheduled Reports (Email)
 ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_scheduled_reports(reportid INT, recipients TEXT, schedule TEXT,
-									format VARCHAR(10), next_trigger_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(reportid))
-				ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+									format VARCHAR(10), next_trigger_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(reportid));");
 
 
 // Change Display of User Name from user_name to lastname firstname.
@@ -318,7 +317,7 @@ vtws_addActorTypeWebserviceEntityWithName(
 $sql = 'CREATE TABLE vtiger_ws_fieldinfo(id varchar(64) NOT NULL PRIMARY KEY,
 										property_name VARCHAR(32),
 										property_value VARCHAR(64)
-										) ENGINE=Innodb DEFAULT CHARSET=utf8;';
+										);';
 ExecuteQuery($sql);
 
 $id = $adb->getUniqueID('vtiger_ws_entity_fieldtype');
@@ -446,8 +445,7 @@ ExecuteQuery("ALTER TABLE vtiger_cvadvfilter ADD COLUMN column_condition VARCHAR
 
 // Create table to store Custom Views Advanced Filters Condition Grouping information
 ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_cvadvfilter_grouping
-		(groupid INT NOT NULL, cvid INT, group_condition VARCHAR(255), condition_expression TEXT, PRIMARY KEY(groupid, cvid))
-		 ENGINE=Innodb DEFAULT CHARSET=utf8;");
+		(groupid INT NOT NULL, cvid INT, group_condition VARCHAR(255), condition_expression TEXT, PRIMARY KEY(groupid, cvid));");
 
 // Migration queries to migrate existing data to the required state (Storing Condition Expression in the newly created table for existing filters)
 // Remove all unwanted condition columns added (where column name is empty)
@@ -490,8 +488,7 @@ ExecuteQuery("UPDATE vtiger_field SET presence = 2 WHERE tabid=$quotesTabId AND 
 ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_picklist_dependency (
 					id INT NOT NULL PRIMARY KEY, tabid INT NOT NULL,
 					sourcefield VARCHAR(255), targetfield VARCHAR(255),
-					sourcevalue VARCHAR(100), targetvalues TEXT, criteria TEXT)
-					ENGINE=Innodb DEFAULT CHARSET=utf8;");
+					sourcevalue VARCHAR(100), targetvalues TEXT, criteria TEXT);");
 
 $studioBlockRes = $adb->pquery("SELECT blockid FROM vtiger_settings_blocks WHERE label = ?", array('LBL_STUDIO'));
 if($adb->num_rows($studioBlockRes) > 0) {

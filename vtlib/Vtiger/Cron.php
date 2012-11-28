@@ -262,10 +262,15 @@ class Vtiger_Cron {
         if(!self::$schemaInitialized) {
             if(!Vtiger_Utils::CheckTable('vtiger_cron_task')) {
                 Vtiger_Utils::CreateTable('vtiger_cron_task',
-                        '(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-					name VARCHAR(100) UNIQUE KEY, handler_file VARCHAR(100) UNIQUE KEY,
-					frequency int, laststart long, lastend long, status int,module VARCHAR(100),
+                        '(id SERIAL NOT NULL PRIMARY KEY,
+					name VARCHAR(100), handler_file VARCHAR(100),
+					frequency int, laststart int8, lastend int8, status int,module VARCHAR(100),
                                         sequence int,description TEXT )',true);
+				/*
+				 * Add unique index to maintain the same logic with Mysql
+				 */						
+				self::querySilent('create unique index cron_task_idx_1 on vtiger_cron_task using btree (name)');
+				self::querySilent('create unique index cron_task_idx_2 on vtiger_cron_task using btree (handler_file)');
             }
             self::$schemaInitialized = true;
         }

@@ -46,7 +46,7 @@ foreach($picklist_arr as $picklistname => $picklistidname)
 		if ($max_count <= 0) $max_count = 1;
 	}
 	$adb->query("drop table if exists vtiger_".$picklistname."_seq");
-	$adb->query("create table vtiger_".$picklistname."_seq (id integer(11))");
+	$adb->query("create table vtiger_".$picklistname."_seq (id int4)");
 	$adb->query("insert into vtiger_".$picklistname."_seq (id) values(".$max_count.")");
 
 	//In 5.0.3 to 5.0.4 RC migration, for some utf8 character picklist values, picklist_valueid is set as 0 because of query instead of pquery

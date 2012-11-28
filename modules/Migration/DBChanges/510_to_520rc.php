@@ -46,7 +46,7 @@ function migration520_populateFieldForSecurity($tabid,$fieldid)
     	}
 	}
 }
-ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_tab_info (tabid INT, prefname VARCHAR(256), prefvalue VARCHAR(256), FOREIGN KEY fk_1_vtiger_tab_info(tabid) REFERENCES vtiger_tab(tabid) ON DELETE CASCADE ON UPDATE CASCADE)  ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_tab_info (tabid INT, prefname VARCHAR(256), prefvalue VARCHAR(256), FOREIGN KEY fk_1_vtiger_tab_info(tabid) REFERENCES vtiger_tab(tabid) ON DELETE CASCADE ON UPDATE CASCADE);");
 
 $documents_tab_id=getTabid('Documents');
 ExecuteQuery("update vtiger_field set quickcreate=3 where tabid = $documents_tab_id and columnname = 'filelocationtype'");
@@ -74,7 +74,7 @@ ExecuteQuery("INSERT INTO vtiger_field(tabid, fieldid, columnname, tablename, ge
 migration520_populateFieldForSecurity($campaigns_tab_id, $campignrelstatus_campaigns_fieldid);
 
 ExecuteQuery("CREATE TABLE vtiger_campaignrelstatus (
-	campaignrelstatusid INTEGER, campaignrelstatus VARCHAR(200), sortorderid INT, presence INT) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	campaignrelstatusid INTEGER, campaignrelstatus VARCHAR(200), sortorderid INT, presence INT);");
 
 ExecuteQuery("INSERT INTO vtiger_campaignrelstatus VALUES (".$adb->getUniqueID('vtiger_campaignrelstatus').", '--None--',1,1)");
 ExecuteQuery("INSERT INTO vtiger_campaignrelstatus VALUES (".$adb->getUniqueID('vtiger_campaignrelstatus').", 'Contacted - Successful',2,1)");
@@ -84,7 +84,7 @@ ExecuteQuery("INSERT INTO vtiger_campaignrelstatus VALUES (".$adb->getUniqueID('
 ExecuteQuery("CREATE TABLE vtiger_campaignaccountrel (
 	campaignid INTEGER UNSIGNED NOT NULL,
 	accountid INTEGER UNSIGNED NOT NULL,
-	campaignrelstatusid INTEGER UNSIGNED DEFAULT 1) ENGINE = InnoDB DEFAULT CHARSET=utf8;");
+	campaignrelstatusid INTEGER UNSIGNED DEFAULT 1);");
 ExecuteQuery("ALTER TABLE vtiger_campaignaccountrel ADD PRIMARY KEY (campaignid, accountid)");
 
 ExecuteQuery("ALTER TABLE vtiger_campaigncontrel ADD COLUMN campaignrelstatusid INTEGER UNSIGNED NOT NULL DEFAULT 1");
@@ -454,14 +454,14 @@ ExecuteQuery("
 	CREATE TABLE vtiger_asteriskincomingevents (
   	uid varchar(255) NOT NULL,
   	channel varchar(100)  default NULL,
-	from_number bigint(20) default NULL,
+	from_number int8 default NULL,
   	from_name varchar(100) default NULL,
-  	to_number bigint(20) default NULL,
+  	to_number int8 default NULL,
   	callertype varchar(100) default NULL,
-  	timer int(20) default NULL,
+  	timer int8 default NULL,
 	flag varchar(3) default NULL,
-  	pbxrecordid int(19) default NULL,
-	relcrmid int(19) default NULL,
+  	pbxrecordid int8 default NULL,
+	relcrmid int8) default NULL,
   	PRIMARY KEY  (uid))");
 // Alter vtiger_relcriteria table to store groupid and column_condition
 $adb->query("ALTER TABLE vtiger_relcriteria ADD COLUMN groupid INT DEFAULT 1");
@@ -503,18 +503,17 @@ if($adb->num_rows($maxReportIdResult) > 0) {
 	}
 }
 
-ExecuteQuery("CREATE TABLE IF NOT EXISTS `vtiger_customerportal_tabs` ( `tabid` int(19) NOT NULL, `visible` int(1)
-	default '1', `sequence` int(1) default NULL, PRIMARY KEY  (`tabid`)) ENGINE=InnoDB
-	DEFAULT CHARSET=utf8");
+ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_customerportal_tabs ( tabid int8 NOT NULL, visible int
+	default 1, sequence int default NULL, PRIMARY KEY  (tabid))");
 
 if(Vtiger_Utils::CheckTable('vtiger_customerportal_prefs')) {
-	ExecuteQuery("ALTER TABLE `vtiger_customerportal_prefs` DROP INDEX tabid_idx");
-	ExecuteQuery("ALTER TABLE `vtiger_customerportal_prefs` ADD PRIMARY KEY  (`tabid`)");
+	ExecuteQuery("ALTER TABLE vtiger_customerportal_prefs DROP INDEX tabid_idx");
+	ExecuteQuery("ALTER TABLE vtiger_customerportal_prefs ADD PRIMARY KEY  (tabid)");
 
 } else {
-	ExecuteQuery("CREATE TABLE IF NOT EXISTS `vtiger_customerportal_prefs` ( `tabid` int(11) NOT NULL, `prefkey`
-		varchar(100) default NULL, `prefvalue` int(20) default NULL, PRIMARY KEY  (`tabid`)
-		) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+	ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_customerportal_prefs ( tabid int8 NOT NULL, prefkey
+		varchar(100) default NULL, prefvalue int8 default NULL, PRIMARY KEY  (tabid)
+		)");
 }
 
 //Adding Block to email fields

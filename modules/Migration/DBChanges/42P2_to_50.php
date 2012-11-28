@@ -50,13 +50,12 @@ if(is_array($wordtemp) && !in_array("templateid",$wordtemp))
 
 //Added the vtiger_announcement table creation to avoid the error
 $ann_query = "CREATE TABLE vtiger_announcement (
-	  `creatorid` int(19) NOT NULL,
-	    `announcement` text,
-	      `title` varchar(255) default NULL,
-	        `time` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-		  PRIMARY KEY  (`creatorid`),
-		    KEY `announcement_UK01` (`creatorid`)
-	    ) ENGINE=InnoDB";
+	  creatorid int8 NOT NULL,
+	    announcement text,
+	      title varchar(255) default NULL,
+	        time timestamp NOT NULL default CURRENT_TIMESTAMP,
+		  PRIMARY KEY  (creatorid)
+	    )";
 Execute($ann_query);
 
 //Added Primay Keys for the left out tables
@@ -94,11 +93,11 @@ foreach($alter_array1 as $query)
 
 //Tables vtiger_profile2globalpermissions, vtiger_actionmapping creation
 
-$create_sql1 ="CREATE TABLE vtiger_profile2globalpermissions (`profileid` int(19) NOT NULL, `globalactionid` int(19) NOT NULL, `globalactionpermission` int(19) default NULL, PRIMARY KEY  (`profileid`,`globalactionid`),  KEY `idx_profile2globalpermissions` (`profileid`,`globalactionid`)) ENGINE=InnoDB";
+$create_sql1 ="CREATE TABLE vtiger_profile2globalpermissions (profileid int8 NOT NULL, globalactionid int8 NOT NULL, globalactionpermission int8 default NULL, PRIMARY KEY  (profileid, globalactionid)) ";
 
 Execute($create_sql1);
 
-$create_sql2 = "CREATE TABLE vtiger_actionmapping (`actionid` int(19) NOT NULL,	`actionname` varchar(200) NOT NULL, `securitycheck` int(19) default NULL, PRIMARY KEY (`actionid`,`actionname`)) TYPE=InnoDB";
+$create_sql2 = "CREATE TABLE vtiger_actionmapping (actionid int8 NOT NULL,	actionname varchar(200) NOT NULL, securitycheck int8 default NULL, PRIMARY KEY (actionid,actionname))";
 Execute($create_sql2);
 
 //For all Profiles, insert the following entries into vtiger_profile2global permissions table:

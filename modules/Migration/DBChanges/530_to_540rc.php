@@ -543,8 +543,8 @@ foreach ($replaceReportColumnsList as $oldName => $newName) {
 }
 
 // Report Charts - tables creation
-ExecutePQuery("CREATE TABLE if not exists vtiger_homereportchart (stuffid int(19) PRIMARY KEY, reportid int(19), reportcharttype varchar(100))", array());
-ExecutePQuery("CREATE TABLE vtiger_reportgroupbycolumn(reportid int(19),sortid int(19),sortcolname varchar(250),dategroupbycriteria varchar(250))", array());
+ExecutePQuery("CREATE TABLE if not exists vtiger_homereportchart (stuffid int8 PRIMARY KEY, reportid int8, reportcharttype varchar(100))", array());
+ExecutePQuery("CREATE TABLE vtiger_reportgroupbycolumn(reportid int8,sortid int8),sortcolname varchar(250),dategroupbycriteria varchar(250))", array());
 ExecutePQuery("ALTER TABLE vtiger_reportgroupbycolumn add constraint fk_1_vtiger_reportgroupbycolumn FOREIGN KEY (reportid) REFERENCES vtiger_report(reportid) ON DELETE CASCADE", array());
 
 ExecutePQuery("DELETE FROM vtiger_time_zone WHERE time_zone = 'Kwajalein'", array());

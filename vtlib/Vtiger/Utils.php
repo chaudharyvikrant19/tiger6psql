@@ -242,10 +242,11 @@ class Vtiger_Utils {
     		$pg_query = str_replace("INT(11) NOT NULL AUTO_INCREMENT", "SERIAL NOT NULL", $pg_query );
     		$pg_query = str_replace("INT(19) NOT NULL AUTO_INCREMENT", "SERIAL NOT NULL", $pg_query );
     		$pg_query = str_replace("INT NOT NULL PRIMARY KEY AUTO_INCREMENT", "SERIAL NOT NULL PRIMARY KEY", $pg_query );
-   			$pg_query = str_replace("INT(11)", "INTEGER", $pg_query );
-   			$pg_query = str_replace("INT(10)", "INTEGER", $pg_query );
+   			$pg_query = str_replace("INT(11)", "INT4", $pg_query );
+   			$pg_query = str_replace("INT(10)", "INT4", $pg_query );
    			$pg_query = str_replace("INT(1)", "INTEGER", $pg_query );
-   			$pg_query = str_replace("INT(19)", "INTEGER", $pg_query );
+   			$pg_query = str_replace("INT(19)", "INT8", $pg_query );
+   			$pg_query = str_replace("INT(20)", "INT8", $pg_query );
    			$pg_query = str_replace("DATETIME", "TIMESTAMP", $pg_query );
 		
 			// Remove everything after ENGINE

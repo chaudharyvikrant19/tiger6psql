@@ -19,8 +19,8 @@ $migrationlog->debug("\n\nDB Changes from 5.0.4 to 5.1.0 RC -------- Starts \n\n
 require_once('include/events/include.inc');
 $em = new VTEventsManager($adb);
 /* For the event api */
-ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_eventhandlers (eventhandler_id int, event_name varchar(100), handler_path varchar(400), handler_class varchar(100), cond text, is_active boolean, primary key(eventhandler_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_eventhandler_module(eventhandler_module_id int, module_name VARCHAR(100), handler_class VARCHAR(100), PRIMARY KEY(eventhandler_module_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_eventhandlers (eventhandler_id int, event_name varchar(100), handler_path varchar(400), handler_class varchar(100), cond text, is_active boolean, primary key(eventhandler_id));");
+ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_eventhandler_module(eventhandler_module_id int, module_name VARCHAR(100), handler_class VARCHAR(100), PRIMARY KEY(eventhandler_module_id));");
 
 /* Added new column actions to vtiger_relatedlists which tracks the type of actions allowed for that related list */
 if(!in_array('actions', $adb->getColumnNames('vtiger_relatedlists'))) {
@@ -165,7 +165,7 @@ ExecuteQuery("UPDATE vtiger_field SET quickcreate = 0 WHERE tablename='vtiger_pr
 ExecuteQuery("UPDATE vtiger_field SET quickcreate = 0 WHERE tablename='vtiger_products' and columnname='qtyinstock'");
 
 /* Necessary DB Changes for Restoring the Related information of a Deleted Record */
-ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_relatedlists_rb(entityid int(19), action varchar(50), rel_table varchar(200), rel_column varchar(200), ref_column varchar(200), related_crm_ids text)  ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_relatedlists_rb(entityid int8, action varchar(50), rel_table varchar(200), rel_column varchar(200), ref_column varchar(200), related_crm_ids text);");
 
 // Enable Search icon for all profiles by default for Recyclebin module
 $profileresult = $adb->query("select * from vtiger_profile");
@@ -183,7 +183,7 @@ ExecuteQuery("update vtiger_customview set status=0 where viewname='All'");
 ExecuteQuery("alter table vtiger_customview add column userid int(19) default '1'");
 
 /* Reminder Popup support for Calendar Events */
-ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_activity_reminder_popup(reminderid int(19) NOT NULL AUTO_INCREMENT,semodule varchar(100) NOT NULL,recordid varchar(100) NOT NULL,date_start DATE,time_start varchar(100) NOT NULL,status int(2) NOT NULL, PRIMARY KEY(reminderid))  ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_activity_reminder_popup(reminderid int8 NOT NULL AUTO_INCREMENT,semodule varchar(100) NOT NULL,recordid varchar(100) NOT NULL,date_start DATE,time_start varchar(100) NOT NULL,status int NOT NULL, PRIMARY KEY(reminderid));");
 ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_reminder_interval(reminder_intervalid int(19) NOT NULL AUTO_INCREMENT,reminder_interval varchar(200) NOT NULL,sortorderid int(19) NOT NULL,presence int(1) NOT NULL, PRIMARY KEY(reminder_intervalid))  ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 ExecuteQuery("alter table vtiger_users add column reminder_interval varchar(100) NOT NULL");
 ExecuteQuery("alter table vtiger_users add column reminder_next_time varchar(100)");
