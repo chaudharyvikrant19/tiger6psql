@@ -86,7 +86,7 @@
 			
 			$evtinfosbyname = array();
 			
-			$result= $adb->pquery($query, $params);
+			$result= $adb->pquery($query, $params);			
 			$it = new SqlResultIterator($adb, $result);
 			foreach($it as $row) {
 				$evtinfosbyname[$row->event_name][] = array(

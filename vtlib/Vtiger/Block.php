@@ -196,7 +196,7 @@ class Vtiger_Block {
 		global $adb;
 		$instances = false;
 
-		$query = "SELECT * FROM vtiger_blocks WHERE tabid=?";
+		$query = "SELECT * FROM vtiger_blocks WHERE tabid=? ORDER BY sequence";
 		$queryParams = Array($moduleInstance->id);
 		
 		$result = $adb->pquery($query, $queryParams);

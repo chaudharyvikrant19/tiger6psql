@@ -248,6 +248,7 @@ class Vtiger_Utils {
    			$pg_query = str_replace("INT(19)", "INT8", $pg_query );
    			$pg_query = str_replace("INT(20)", "INT8", $pg_query );
    			$pg_query = str_replace("DATETIME", "TIMESTAMP", $pg_query );
+   			$pg_query = str_replace("RELATED_TO VARCHAR(100)", "RELATED_TO INTEGER", $pg_query );
 		
 			// Remove everything after ENGINE
 			$pos = strpos( $pg_query, "ENGINE=");

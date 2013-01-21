@@ -49,7 +49,7 @@ class PriceBooks_RelationListView_Model extends Vtiger_RelationListView_Model {
 			$query = "$query ORDER BY $orderBy $sortOrder";
 		}
 
-		$limitQuery = $query .' LIMIT '.$startIndex.','.$pageLimit;
+		$limitQuery = $query .' OFFSET '.$startIndex.' LIMIT '.$pageLimit;
 		$result = $db->pquery($limitQuery, array());
 		$relatedRecordList = array();
 
@@ -70,11 +70,11 @@ class PriceBooks_RelationListView_Model extends Vtiger_RelationListView_Model {
 			$newRow['listprice'] = CurrencyField::convertToUserFormat($row['listprice'], null, true);
 
 			$record = Vtiger_Record_Model::getCleanInstance($relationModule->get('name'));
-			$relatedRecordList[] = $record->setData($newRow)->setModuleFromInstance($relationModule);
+			$relatedRecordList[$recordId] = $record->setData($newRow)->setModuleFromInstance($relationModule);
 		}
 		$pagingModel->calculatePageRange($relatedRecordList);
 
-		$nextLimitQuery = $query. ' LIMIT '.($startIndex+$pageLimit).' , 1';
+		$nextLimitQuery = $query. ' OFFSET '.($startIndex+$pageLimit).' LIMIT 1';
 		$nextPageLimitResult = $db->pquery($nextLimitQuery, array());
 		if($db->num_rows($nextPageLimitResult) > 0){
 			$pagingModel->set('nextPageExists', true);

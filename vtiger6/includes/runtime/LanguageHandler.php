@@ -104,7 +104,7 @@ class Vtiger_Language_Handler {
 		}
 		return self::$languageContainer[$currentLanguage][$module];
 	}
-	
+
 	/**
 	 * Function that returns current language
 	 * @return <String> -
