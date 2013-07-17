@@ -149,7 +149,7 @@ class Vtiger_Utils {
 		$adb->dieOnError = false;
 
 		$tablename = Vtiger_Utils::SQLEscape($tablename);
-		$tablecheck = $adb->query("SELECT 1 FROM $tablename LIMIT 1");
+		$tablecheck = $adb->pquery("SELECT 1 FROM $tablename LIMIT 1", array());
 
 		$tablePresent = true;
 		if(empty($tablecheck))
@@ -176,7 +176,7 @@ class Vtiger_Utils {
 		if($suffixTableMeta !== false) {
 			if($suffixTableMeta === true) {
 				if($adb->isMySQL()) {
-					$suffixTableMeta = " ENGINE=InnoDB DEFAULT CHARSET=utf8";
+					$suffixTableMeta = ' ENGINE=InnoDB DEFAULT CHARSET=utf8';
 				} else {
 					// TODO Handle other database types.
 					$suffixTableMeta = " ";
@@ -184,7 +184,7 @@ class Vtiger_Utils {
 			}
 			$sql .= $suffixTableMeta;
 		}
-		$adb->query($sql);
+		$adb->pquery($sql, array());
 		$adb->dieOnError = $org_dieOnError;	
 	}
 
@@ -345,7 +345,7 @@ class Vtiger_Utils {
 	static function CreateTableSql($tablename) {
 		global $adb;
 
-		$create_table = $adb->query("SHOW CREATE TABLE $tablename");
+		$create_table = $adb->pquery("SHOW CREATE TABLE $tablename", array());
 		$sql = decode_html($adb->query_result($create_table, 0, 1));
 		return $sql;
 	}

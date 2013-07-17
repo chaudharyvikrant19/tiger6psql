@@ -14,7 +14,7 @@
  * Redirect based on the UI state selected. 
  */
 
-$defaultUI = 'vtiger6/'; // Use ('') for vtiger5
+$defaultUI = ''; // Use ('') for vtiger5
 
 // Hook to reset the configuration
 if (file_exists('vtigerui_override.php')) {
@@ -43,5 +43,8 @@ if (isset($_REQUEST['next'])) {
 		$uri = "?module=Home&action=index";
 	}
 }
+
+// To overcome browser caching this redirect (could cause trouble to enable switching UI between 5 & 6)
+header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); header("Cache-Control: no-cache"); header("Pragma: no-cache");
 
 header ("Location: {$ui}index.php{$uri}");
