@@ -23,6 +23,9 @@ if (file_exists('config_override.php')) {
 // NOTE: Make sure GetRelatedList function_exists check is made in include/utils/RelatedListView.php
 include_once dirname(__FILE__) . '/api/Relation.php';
 
+require_once 'vtiger6-dir.php';
+include_once VTIGER6_REL_DIR. 'includes/main/WebUI.php';
+
 include_once dirname(__FILE__) . '/api/Request.php';
 include_once dirname(__FILE__) . '/api/Response.php';
 include_once dirname(__FILE__) . '/api/Session.php';
@@ -53,6 +56,7 @@ class Mobile_API_Controller {
 		'deleteRecords'              => array('file' => '/api/ws/DeleteRecords.php', 'class' => 'Mobile_WS_DeleteRecords'),
 	
 		'addRecordComment'           => array('file' => '/api/ws/AddRecordComment.php', 'class' => 'Mobile_WS_AddRecordComment'),
+		'history'                    => array('file' => '/api/ws/History.php', 'class' => 'Mobile_WS_History')
 	);
 	
 	static function process(Mobile_API_Request $request) {
