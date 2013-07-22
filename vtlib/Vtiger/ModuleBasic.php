@@ -17,7 +17,7 @@ include_once('vtlib/Vtiger/Link.php');
 include_once('vtlib/Vtiger/Event.php');
 include_once('vtlib/Vtiger/Webservice.php');
 include_once('vtlib/Vtiger/Version.php');
-require_once 'vtiger6/includes/runtime/Cache.php';
+require_once VTIGER6_REL_DIR. 'includes/runtime/Cache.php';
 
 /**
  * Provides API to work with vtiger CRM Module
@@ -89,23 +89,10 @@ class Vtiger_ModuleBasic {
 	 * @access private
 	 */
 	function initialize2() {
-		global $adb;
-		$cache = Vtiger_Cache::getInstance();
-		if($cache->getEntityField($this->name)){
-		    $this->basetable = $cache->getEntityField($this->name)->basetable;
-		    $entiyObj->basetableid = $cache->getEntityField($this->name)->basetableid;
-		    
-		} else {
-		$result = $adb->pquery("SELECT tablename,entityidfield FROM vtiger_entityname WHERE tabid=?",
-			Array($this->id));
-		if($adb->num_rows($result)) {
-			$this->basetable = $adb->query_result($result, 0, 'tablename');
-			$this->basetableid=$adb->query_result($result, 0, 'entityidfield');
-		    }
-		    $entiyObj = new stdClass();
-		    $entiyObj->basetable = $this->basetable;
-		    $entiyObj->basetableid = $this->basetableid;
-		    $cache->setEntityField($this->name,$entiyObj);
+		$entitydata = Vtiger_Functions::getEntityModuleInfo($this->name);
+		if ($entitydata) {
+			$this->basetable = $entitydata['tablename'];
+			$this->basetableid=$entitydata['entityidfield'];
 		}
 	}
 
@@ -126,7 +113,7 @@ class Vtiger_ModuleBasic {
 	 */
 	function __getNextSequence() {
 		global $adb;
-		$result = $adb->query("SELECT MAX(tabsequence) AS max_tabseq FROM vtiger_tab");
+		$result = $adb->pquery("SELECT MAX(tabsequence) AS max_tabseq FROM vtiger_tab", array());
 		$maxtabseq = $adb->query_result($result, 0, 'max_tabseq');
 		return ++$maxtabseq;
 	}

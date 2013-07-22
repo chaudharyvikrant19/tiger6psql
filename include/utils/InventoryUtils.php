@@ -10,50 +10,6 @@
  ********************************************************************************/
 
 /**
- * This function returns the Product detail block values in array format.
- * Input Parameter are $module - module name, $focus - module object, $num_of_products - no.of vtiger_products associated with it  * $associated_prod = associated product details
- * column vtiger_fields/
- */
-
-function getProductDetailsBlockInfo($mode,$module,$focus='',$num_of_products='',$associated_prod='')
-{
-	global $log;
-	$log->debug("Entering getProductDetailsBlockInfo(".$mode.",".$module.",".$num_of_products.",".$associated_prod.") method ...");
-
-	$productDetails = Array();
-	$productBlock = Array();
-	if($num_of_products=='')
-	{
-		$num_of_products = getNoOfAssocProducts($module,$focus);
-	}
-	$productDetails['no_products'] = $num_of_products;
-	if($associated_prod=='')
-        {
-		$productDetails['product_details'] = getAssociatedProducts($module,$focus);
-	}
-	else
-	{
-		$productDetails['product_details'] = $associated_prod;
-	}
-	if($focus != '')
-	{
-		$productBlock[] = Array('mode'=>$focus->mode);
-		$productBlock[] = $productDetails['product_details'];
-		$productBlock[] = Array('taxvalue' => $focus->column_fields['txtTax']);
-		$productBlock[] = Array('taxAdjustment' => $focus->column_fields['txtAdjustment']);
-		$productBlock[] = Array('hdnSubTotal' => $focus->column_fields['hdnSubTotal']);
-		$productBlock[] = Array('hdnGrandTotal' => $focus->column_fields['hdnGrandTotal']);
-	}
-	else
-	{
-		$productBlock[] = Array(Array());
-
-	}
-	$log->debug("Exiting getProductDetailsBlockInfo method ...");
-	return $productBlock;
-}
-
-/**
  * This function updates the stock information once the product is ordered.
  * Param $productid - product id
  * Param $qty - product quantity in no's
@@ -104,7 +60,7 @@ function sendPrdStckMail($product_id,$upd_qty,$prod_name,$qtyinstk,$qty,$module)
 	$log->debug("Inside sendPrdStckMail function, module=".$module);
 	$log->debug("Prd reorder level ".$reorderlevel);
 	if($upd_qty < $reorderlevel)
-	{	
+	{
 		//send mail to the handler
 		$handler = getRecordOwnerId($product_id);
 		foreach($handler as $type=>$id){
@@ -483,26 +439,34 @@ function updateInventoryProductRel($entity) {
 		}
 	}
 
+	$moduleName = $entity->getModuleName();
+	if ($moduleName === 'Invoice') {
+		$statusFieldName = 'invoicestatus';
+		$statusFieldValue = 'Cancel';
+	} elseif ($moduleName === 'PurchaseOrder') {
+		$statusFieldName = 'postatus';
+		$statusFieldValue = 'Received Shipment';
+	}
+
 	$statusChanged = false;
 	$vtEntityDelta = new VTEntityDelta ();
-	$oldEntity = $vtEntityDelta-> getOldValue('Invoice', $entity_id, 'invoicestatus');
+	$oldEntity = $vtEntityDelta-> getOldValue($moduleName, $entity_id, $statusFieldName);
 	$recordDetails = $entity->getData();
-	$statusChanged = $vtEntityDelta->hasChanged('Invoice', $entity_id, 'invoicestatus');
+	$statusChanged = $vtEntityDelta->hasChanged($moduleName, $entity_id, $statusFieldName);
 	if($statusChanged) {
-		if($recordDetails['invoicestatus'] == 'Cancel') {
+		if($recordDetails[$statusFieldName] == $statusFieldValue) {
 			$adb->pquery("UPDATE vtiger_inventoryproductrel SET incrementondel=0 WHERE id=?",array($entity_id));
 			$updateInventoryProductRel_deduct_stock = false;
 			if(empty($update_product_array)) {
 				addProductsToStock($entity_id);
 			}
-		} elseif($oldEntity == 'Cancel') {
+		} elseif($oldEntity == $statusFieldValue) {
 			$updateInventoryProductRel_deduct_stock = false;
 			deductProductsFromStock($entity_id);
 		}
-	} elseif($recordDetails['invoicestatus'] == 'Cancel') {
+	} elseif($recordDetails[$statusFieldName] == $statusFieldValue) {
 		$updateInventoryProductRel_deduct_stock = false;
 	}
-
 
 	if($updateInventoryProductRel_deduct_stock) {
 		$adb->pquery("UPDATE vtiger_inventoryproductrel SET incrementondel=1 WHERE id=?",array($entity_id));
@@ -877,6 +841,8 @@ function getAllCurrencies($available='available') {
 		$currency_details[$i]['currencycode'] = $adb->query_result($res,$i,'currency_code');
 		$currency_details[$i]['currencysymbol'] = $adb->query_result($res,$i,'currency_symbol');
 		$currency_details[$i]['curid'] = $adb->query_result($res,$i,'id');
+		/* alias key added to be consistent with result of InventoryUtils::getInventoryCurrencyInfo */
+		$currency_details[$i]['currency_id'] = $adb->query_result($res,$i,'id');
 		$currency_details[$i]['conversionrate'] = $adb->query_result($res,$i,'conversion_rate');
 		$currency_details[$i]['curname'] = 'curname' . $adb->query_result($res,$i,'id');
 	}
@@ -941,7 +907,7 @@ function getPriceDetailsForProduct($productid, $unit_price, $available='availabl
 			if ($cur_value == null || $cur_value == '') {
 				$price_details[$i]['check_value'] = false;
 				if	($unit_price != null) {
-					$cur_value = convertFromMasterCurrency($unit_price, $actual_conversion_rate);
+					$cur_value = CurrencyField::convertFromMasterCurrency($unit_price, $actual_conversion_rate);
 				} else {
 					$cur_value = '0';
 				}
@@ -1084,7 +1050,7 @@ function getPricesForProducts($currencyid, $product_ids, $module='Products') {
 		{
 			$product_id = $adb->query_result($result, $i, 'productid');
 			if(getFieldVisibilityPermission($module,$current_user->id,'unit_price') == '0') {
-				$actual_price = $adb->query_result($result, $i, 'actual_price');
+				$actual_price = (float)$adb->query_result($result, $i, 'actual_price');
 
 				if ($actual_price == null || $actual_price == '') {
 					$unit_price = $adb->query_result($result, $i, 'unit_price');
@@ -1180,8 +1146,8 @@ function createRecords($obj) {
 	$moduleFields = $moduleMeta->getModuleFields();
 	$focus = CRMEntity::getInstance($moduleName);
 
-	$tableName = Import_Utils::getDbTableName($obj->user);
-	$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = '. Import_Data_Controller::$IMPORT_RECORD_NONE .' GROUP BY subject';
+	$tableName = Import_Utils_Helper::getDbTableName($obj->user);
+	$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = '. Import_Data_Action::$IMPORT_RECORD_NONE .' GROUP BY subject';
 
 	if($obj->batchImport) {
 		$importBatchLimit = getImportBatchLimit();
@@ -1204,7 +1170,7 @@ function createRecords($obj) {
 		$fieldData = array();
 		$lineItems = array();
 		$subject = $row['subject'];
-		$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = '. Import_Data_Controller::$IMPORT_RECORD_NONE .' AND subject = "'. $subject .'"';
+		$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = '. Import_Data_Controller::$IMPORT_RECORD_NONE .' AND subject = "'. str_replace("\"", "\\\"", $subject) .'"';
 		$subjectResult = $adb->query($sql);
 		$count = $adb->num_rows($subjectResult);
 		$subjectRowIDs = array();
@@ -1349,7 +1315,7 @@ function importRecord($obj, $inventoryFieldData, $lineItemDetails) {
 
 function getImportStatusCount($obj) {
 	global $adb;
-	$tableName = Import_Utils::getDbTableName($obj->user);
+	$tableName = Import_Utils_Helper::getDbTableName($obj->user);
 	$result = $adb->query('SELECT status FROM '.$tableName. ' GROUP BY subject');
 
 	$statusCount = array('TOTAL' => 0, 'IMPORTED' => 0, 'FAILED' => 0, 'PENDING' => 0,
@@ -1391,7 +1357,9 @@ function undoLastImport($obj, $user) {
 	$owner = new Users();
 	$owner->id = $ownerId;
 	$owner->retrieve_entity_info($ownerId, 'Users');
-	$dbTableName = Import_Utils::getDbTableName($owner);
+	
+	$dbTableName = Import_Utils_Helper::getDbTableName($owner);
+	
 	if(!is_admin($user) && $user->id != $owner->id) {
 		$viewer = new Import_UI_Viewer();
 		$viewer->display('OperationNotPermitted.tpl', 'Vtiger');
@@ -1439,4 +1407,23 @@ function getCurrencyId($fieldValue) {
 	}
 	return $currencyId;
 }
+
+/**
+ * Function used to get the lineitems fields
+ * @global type $adb
+ * @return type <array> - list of lineitem fields
+ */
+function getLineItemFields(){
+	global $adb;
+
+	$sql = 'SELECT DISTINCT columnname FROM vtiger_field WHERE tablename=?';
+	$result = $adb->pquery($sql, array('vtiger_inventoryproductrel'));
+	$lineItemdFields = array();
+	$num_rows = $adb->num_rows($result);
+	for($i=0; $i<$num_rows; $i++){
+		$lineItemdFields[] = $adb->query_result($result,$i, 'columnname');
+	}
+	return $lineItemdFields;
+}
+
 ?>

@@ -689,10 +689,6 @@ function insertIntoRecurringTable(& $recurObj)
 		$query_exist = "SELECT activity_id FROM ".$this->reminder_table." WHERE activity_id = ?";
 		$result_exist = $this->db->pquery($query_exist, array($activity_id));
 
-		$rec_id = $recurid;
-		if($rec_id !== '') {
-			$rec_id = 0;
-		}
 		if($remindermode == 'edit')
 		{
 			if($this->db->num_rows($result_exist) > 0)
@@ -704,7 +700,7 @@ function insertIntoRecurringTable(& $recurObj)
 			else
 			{
 				$query = "INSERT INTO ".$this->reminder_table." VALUES (?,?,?,?)";
-				$params = array($activity_id, $reminder_time, 0, $rec_id);
+				$params = array($activity_id, $reminder_time, 0, $recurid);
 			}
 		}
 		elseif(($remindermode == 'delete') && ($this->db->num_rows($result_exist) > 0))
@@ -715,7 +711,7 @@ function insertIntoRecurringTable(& $recurObj)
 		else
 		{
 			$query = "INSERT INTO ".$this->reminder_table." VALUES (?,?,?,?)";
-			$params = array($activity_id, $reminder_time, 0, $rec_id);
+			$params = array($activity_id, $reminder_time, 0, $recurid);
 		}
       	$this->db->pquery($query,$params,true,"Error in processing vtiger_table $this->reminder_table");
 		$log->debug("Exiting vtiger_activity_reminder method ...");

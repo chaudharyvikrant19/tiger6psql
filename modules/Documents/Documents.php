@@ -12,7 +12,6 @@ include_once('config.php');
 require_once('include/logging.php');
 require_once('include/database/PearDatabase.php');
 require_once('data/CRMEntity.php');
-require_once('include/upload_file.php');
 
 // Note is used to store customer information.
 class Documents extends CRMEntity {
@@ -23,8 +22,13 @@ class Documents extends CRMEntity {
 	var $table_index= 'notesid';
 	var $default_note_name_dom = array('Meeting vtiger_notes', 'Reminder');
 
-	var $tab_name = Array('vtiger_crmentity','vtiger_notes');
-	var $tab_name_index = Array('vtiger_crmentity'=>'crmid','vtiger_notes'=>'notesid','vtiger_senotesrel'=>'notesid');
+	var $tab_name = Array('vtiger_crmentity','vtiger_notes','vtiger_notescf');
+	var $tab_name_index = Array('vtiger_crmentity'=>'crmid','vtiger_notes'=>'notesid','vtiger_senotesrel'=>'notesid','vtiger_notescf'=>'notesid');
+
+	/**
+	 * Mandatory table for supporting custom fields.
+	 */
+	var $customFieldTable = Array('vtiger_notescf', 'notesid');
 
 	var $column_fields = Array();
 
@@ -354,12 +358,12 @@ class Documents extends CRMEntity {
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
 	function generateReportsSecQuery($module,$secmodule,$queryplanner) {
-		
+
 		$matrix = $queryplanner->newDependencyMatrix();
-		
+
 		$matrix->setDependency("vtiger_crmentityDocuments",array("vtiger_groupsDocuments","vtiger_usersDocuments","vtiger_lastModifiedByDocuments"));
 		$matrix->setDependency("vtiger_notes",array("vtiger_crmentityDocuments","vtiger_attachmentsfolder"));
-		
+
 		if (!$queryplanner->requireTable('vtiger_notes', $matrix)) {
 			return '';
 		}
@@ -507,6 +511,18 @@ class Documents extends CRMEntity {
 			}
 			return $query;
 		}
+	}
+
+	/**
+	 * Function to check the module active and user action permissions before showing as link in other modules
+	 * like in more actions of detail view.
+	 */
+	static function isLinkPermitted($linkData) {
+		$moduleName = "Documents";
+		if(vtlib_isModuleActive($moduleName) && isPermitted($moduleName, 'EditView') == 'yes') {
+			return true;
+		}
+		return false;
 	}
 }
 ?>

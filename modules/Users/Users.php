@@ -38,7 +38,7 @@ require_once('data/Tracker.php');
 require_once 'include/utils/CommonUtils.php';
 require_once 'include/Webservices/Utils.php';
 require_once('modules/Users/UserTimeZonesArray.php');
-require_once 'vtiger6/includes/runtime/Cache.php';
+require_once VTIGER6_REL_DIR. 'includes/runtime/Cache.php';
 
 // User is used to store customer information.
 /** Main class for the user module
@@ -130,7 +130,7 @@ class Users extends CRMEntity {
     var $new_schema = true;
 
     var $DEFAULT_PASSWORD_CRYPT_TYPE; //'BLOWFISH', /* before PHP5.3*/ MD5;
-    
+
     //Default Widgests
     var $default_widgets = array('PLVT', 'CVLVT', 'UA');
 
@@ -665,6 +665,7 @@ class Users extends CRMEntity {
      */
 
     function retrieveCurrentUserInfoFromFile($userid) {
+		checkFileAccessForInclusion('user_privileges/user_privileges_'.$userid.'.php');
         require('user_privileges/user_privileges_'.$userid.'.php');
         foreach($this->column_fields as $field=>$value_iter) {
             if(isset($user_info[$field])) {
@@ -694,29 +695,37 @@ class Users extends CRMEntity {
         if(empty($this->column_fields['date_format'])) {
             $this->column_fields['date_format'] = 'yyyy-mm-dd';
         }
-		
+
 		if(empty($this->column_fields['start_hour'])) {
-            $this->column_fields['start_hour'] = '00:00';
+            $this->column_fields['start_hour'] = '09:00';
         }
-		
+
 		if(empty($this->column_fields['dayoftheweek'])) {
             $this->column_fields['dayoftheweek'] = 'Sunday';
         }
-		
+
 		if(empty($this->column_fields['callduration'])) {
             $this->column_fields['callduration'] = 5;
         }
-		
+
 		if(empty($this->column_fields['othereventduration'])) {
             $this->column_fields['othereventduration'] = 5;
         }
-		
+
 		if(empty($this->column_fields['hour_format'])) {
             $this->column_fields['hour_format'] = 12;
         }
-		
+
 		if(empty($this->column_fields['activity_view'])) {
             $this->column_fields['activity_view'] = 'Today';
+        }
+
+		if(empty($this->column_fields['calendarsharedtype'])) {
+            $this->column_fields['calendarsharedtype'] = 'public';
+        }
+
+		if(empty($this->column_fields['default_record_view'])) {
+            $this->column_fields['default_record_view'] = 'Summary';
         }
 
         $this->db->println("TRANS saveentity starts $module");
@@ -939,18 +948,24 @@ class Users extends CRMEntity {
         $log->debug("Exiting from insertIntoAttachment($id,$module) method.");
     }
 
-    /** Function to retreive the user info of the specifed user id The user info will be available in $this->column_fields array
+	/** Function to retreive the user info of the specifed user id The user info will be available in $this->column_fields array
      * @param $record -- record id:: Type integer
      * @param $module -- module:: Type varchar
      */
     function retrieve_entity_info($record, $module) {
-        global $adb,$log;
+		global $adb,$log;
         $log->debug("Entering into retrieve_entity_info($record, $module) method.");
 
         if($record == '') {
             $log->debug("record is empty. returning null");
             return null;
         }
+
+		// Cannot use parent::retrieve_entity_info as
+		// some meta-columns (which are not module fields) are skipped from being read.
+		// Example: is_admin
+		//
+		// Special Feature: $this->column_fields keys should be set as property of this record.
 
         $result = Array();
         foreach($this->tab_name_index as $table_name=>$index) {
@@ -1147,7 +1162,7 @@ class Users extends CRMEntity {
             }
         }else {
             for($i = 0;$i < count($this->homeorder_array);$i++) {
-              if(in_array($this->homeorder_array[$i], $this->default_widgets)){                
+              if(in_array($this->homeorder_array[$i], $this->default_widgets)){
                 $return_array[$this->homeorder_array[$i]] = $this->homeorder_array[$i];
               }else{
                   $return_array[$this->homeorder_array[$i]] = '';
@@ -1248,49 +1263,49 @@ class Users extends CRMEntity {
         $tc = $adb->getUniqueID("vtiger_homestuff");
         $visibility=0;
         $sql="insert into vtiger_homestuff values($tc, 15, 'Tag Cloud', $uid, $visibility, 'Tag Cloud')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s1.",'ALVT',5,'Accounts')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s2.",'HDB',5,'Dashboard')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s3.",'PLVT',5,'Potentials')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s4.",'QLTQ',5,'Quotes')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s5.",'CVLVT',5,'NULL')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s6.",'HLT',5,'HelpDesk')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s7.",'UA',5,'Calendar')";
         $adb->pquery($sql,array());
 
         $sql="insert into vtiger_homedefault values(".$s8.",'GRT',5,'NULL')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s9.",'OLTSO',5,'SalesOrder')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s10.",'ILTI',5,'Invoice')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s11.",'MNL',5,'Leads')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s12.",'OLTPO',5,'PurchaseOrder')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
         $sql="insert into vtiger_homedefault values(".$s13.",'PA',5,'Calendar')";
         $adb->pquery($sql,array());
 
         $sql="insert into vtiger_homedefault values(".$s14.",'LTFAQ',5,'Faq')";
-        $adb->query($sql);
+        $adb->pquery($sql, array());
 
     }
 
@@ -1310,12 +1325,12 @@ class Users extends CRMEntity {
 				 {
                     $save_array[] = $this->homeorder_array[$i];
                     $qry=" update vtiger_homestuff,vtiger_homedefault set vtiger_homestuff.visible=0 where vtiger_homestuff.stuffid=vtiger_homedefault.stuffid and vtiger_homestuff.userid=".$id." and vtiger_homedefault.hometype='".$this->homeorder_array[$i]."'";//To show the default Homestuff on the the Home Page
-                    $result=$adb->query($qry);
+                    $result=$adb->pquery($qry, array());
                 }
 				 else
 				 {
                     $qry="update vtiger_homestuff,vtiger_homedefault set vtiger_homestuff.visible=1 where vtiger_homestuff.stuffid=vtiger_homedefault.stuffid and vtiger_homestuff.userid=".$id." and vtiger_homedefault.hometype='".$this->homeorder_array[$i]."'";//To hide the default Homestuff on the the Home Page
-                    $result=$adb->query($qry);
+                    $result=$adb->pquery($qry, array());
                 }
             }
             if($save_array !="")
@@ -1411,14 +1426,14 @@ class Users extends CRMEntity {
 
 	function transformOwnerShipAndDelete($userId,$transformToUserId){
 		$adb = PearDatabase::getInstance();
-		
+
 		$em = new VTEventsManager($adb);
 
         // Initialize Event trigger cache
 		$em->initTriggerCache();
 
 		$entityData  = VTEntityData::fromUserId($adb, $userId);
-		
+
 		//set transform user id
 		$entityData->set('transformtouserid',$transformToUserId);
 
@@ -1482,13 +1497,19 @@ class Users extends CRMEntity {
     */
     public function setUserPreferences($requestArray) {
 		global $adb;
-        if (isset ($requestArray['lang_name']) && isset ($requestArray['time_zone'])) {
-			$updateQuery = 'UPDATE vtiger_users SET language = ?, time_zone = ? WHERE id = ?';
-			$updateQueryParams = array(vtlib_purify($requestArray['lang_name']), vtlib_purify($requestArray['time_zone']), $this->id);
+		$updateData = array();
+		if (isset($requestArray['lang_name'])) $updateData['language'] = vtlib_purify ($requestArray['lang_name']);
+		if (isset($requestArray['time_zone'])) $updateData['time_zone']= vtlib_purify ($requestArray['time_zone']);
+		if (isset($requestArray['date_format'])) $updateData['date_format']= vtlib_purify ($requestArray['date_format']);
+
+		if (!empty($updateData)) {
+			$updateQuery = 'UPDATE vtiger_users SET '. ( implode('=?,', array_keys($updateData)). '=?') . ' WHERE id = ?';
+			$updateQueryParams = array_values($updateData);
+			$updateQueryParams[] = $this->id;
 			$adb->pquery($updateQuery, $updateQueryParams);
 		}
 	}
-	
+
 	/**
 	 * Function to set the Company Logo
 	 * @param- $_REQUEST array
@@ -1583,7 +1604,7 @@ class Users_CRMSetup {
 		}
 		return $isFirstUser;
 	}
-	
+
 	/**
 	 * Function to get user setup status
 	 * @return-is First User or not

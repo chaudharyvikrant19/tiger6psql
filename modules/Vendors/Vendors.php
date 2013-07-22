@@ -93,6 +93,7 @@ class Vendors extends CRMEntity {
 		$this_module = $currentModule;
 
         $related_module = vtlib_getModuleNameById($rel_tab_id);
+		checkFileAccessForInclusion("modules/$related_module/$related_module.php");
 		require_once("modules/$related_module/$related_module.php");
 		$other = new $related_module();
         vtlib_setup_modulevars($related_module, $other);
@@ -150,6 +151,7 @@ class Vendors extends CRMEntity {
 		$this_module = $currentModule;
 
         $related_module = vtlib_getModuleNameById($rel_tab_id);
+		checkFileAccessForInclusion("modules/$related_module/$related_module.php");
 		require_once("modules/$related_module/$related_module.php");
 		$other = new $related_module();
         vtlib_setup_modulevars($related_module, $other);
@@ -238,6 +240,7 @@ class Vendors extends CRMEntity {
 		$this_module = $currentModule;
 
         $related_module = vtlib_getModuleNameById($rel_tab_id);
+		checkFileAccessForInclusion("modules/$related_module/$related_module.php");
 		require_once("modules/$related_module/$related_module.php");
 		$other = new $related_module();
         vtlib_setup_modulevars($related_module, $other);
@@ -266,7 +269,17 @@ class Vendors extends CRMEntity {
 
 		$userNameSql = getSqlForNameInDisplayFormat(array('first_name'=>
 							'vtiger_users.first_name', 'last_name' => 'vtiger_users.last_name'), 'Users');
-		$query = "SELECT case when (vtiger_users.user_name not like '') then $userNameSql else vtiger_groups.groupname end as user_name,vtiger_contactdetails.*, vtiger_crmentity.crmid, vtiger_crmentity.smownerid,vtiger_vendorcontactrel.vendorid,vtiger_account.accountname from vtiger_contactdetails inner join vtiger_crmentity on vtiger_crmentity.crmid = vtiger_contactdetails.contactid  inner join vtiger_vendorcontactrel on vtiger_vendorcontactrel.contactid=vtiger_contactdetails.contactid left join vtiger_groups on vtiger_groups.groupid=vtiger_crmentity.smownerid left join vtiger_account on vtiger_account.accountid = vtiger_contactdetails.accountid left join vtiger_users on vtiger_users.id=vtiger_crmentity.smownerid where vtiger_crmentity.deleted=0 and vtiger_vendorcontactrel.vendorid = ".$id;
+		$query = "SELECT case when (vtiger_users.user_name not like '') then $userNameSql else vtiger_groups.groupname end as user_name,vtiger_contactdetails.*, vtiger_crmentity.crmid, vtiger_crmentity.smownerid,vtiger_vendorcontactrel.vendorid,vtiger_account.accountname from vtiger_contactdetails 
+				inner join vtiger_crmentity on vtiger_crmentity.crmid = vtiger_contactdetails.contactid  
+				inner join vtiger_vendorcontactrel on vtiger_vendorcontactrel.contactid=vtiger_contactdetails.contactid
+				INNER JOIN vtiger_contactaddress ON vtiger_contactdetails.contactid = vtiger_contactaddress.contactaddressid
+				INNER JOIN vtiger_contactsubdetails ON vtiger_contactdetails.contactid = vtiger_contactsubdetails.contactsubscriptionid
+				INNER JOIN vtiger_customerdetails ON vtiger_contactdetails.contactid = vtiger_customerdetails.customerid
+				INNER JOIN vtiger_contactscf ON vtiger_contactdetails.contactid = vtiger_contactscf.contactid
+				left join vtiger_groups on vtiger_groups.groupid=vtiger_crmentity.smownerid 
+				left join vtiger_account on vtiger_account.accountid = vtiger_contactdetails.accountid 
+				left join vtiger_users on vtiger_users.id=vtiger_crmentity.smownerid 
+				where vtiger_crmentity.deleted=0 and vtiger_vendorcontactrel.vendorid = ".$id;
 
 		$return_value = GetRelatedList($this_module, $related_module, $other, $query, $button, $returnset);
 
@@ -325,6 +338,7 @@ class Vendors extends CRMEntity {
 		$this_module = $currentModule;
 
         $related_module = vtlib_getModuleNameById($rel_tab_id);
+		checkFileAccessForInclusion("modules/$related_module/$related_module.php");
 		require_once("modules/$related_module/$related_module.php");
 		$other = new $related_module();
         vtlib_setup_modulevars($related_module, $other);
