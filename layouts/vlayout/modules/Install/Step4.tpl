@@ -36,7 +36,7 @@
 						</thead>
 						<tbody>
 							<tr><td>{vtranslate('LBL_DATABASE_TYPE', 'Install')}<span class="no">*</span></td>
-								<td>{vtranslate('MySQL', 'Install')}<input type="hidden" value="mysql" name="db_type"></td>
+								<td>{vtranslate('PostgreSQL', 'Install')}<input type="hidden" value="postgres" name="db_type"></td>
 							</tr>
 							<tr><td>{vtranslate('LBL_HOST_NAME', 'Install')}<span class="no">*</span></td>
 								<td><input type="text" value="" name="db_hostname"></td>

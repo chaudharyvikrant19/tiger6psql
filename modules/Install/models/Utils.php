@@ -135,7 +135,7 @@ class Install_Utils_Model {
 		if (isset($gd_info['GD Version'])) {
 			$gnInstalled = true;
 		}
-		$preInstallConfig['LBL_GD_LIBRARY']		= array((extension_loaded('gd') || $gnInstalled), true, (extension_loaded('gd') || $gnInstalled));
+		$preInstallConfig['LBL_GD_LIBRARY']	= array((extension_loaded('gd') || $gnInstalled), true, (extension_loaded('gd') || $gnInstalled));
 		$preInstallConfig['LBL_ZLIB_SUPPORT']	= array(function_exists('gzinflate'), true, (function_exists('gzinflate') == true));
 
 		return $preInstallConfig;
@@ -243,6 +243,14 @@ class Install_Utils_Model {
 	}
 
 	/**
+	 * Function checks if its postgreSQL type
+	 * @param type $dbType
+	 * @return type
+	 */
+	static function isPostgres($dbType) {
+		return (stripos($dbType ,'postgres') === 0);
+	}
+	/**
 	 * Function returns mysql version
 	 * @param type $serverInfo
 	 * @return type
@@ -286,9 +294,9 @@ class Install_Utils_Model {
 			if(@$conn->Connect($db_hostname,$db_username,$db_password)) {
 				$db_server_status = true;
 				$serverInfo = $conn->ServerInfo();
-				if(self::isMySQL($db_type)) {
-					$mysql_server_version = self::getMySQLVersion($serverInfo);
-				}
+				//if(self::isMySQL($db_type)) {
+				//	$mysql_server_version = self::getMySQLVersion($serverInfo);
+				//}
 				if($create_db) {
 					// drop the current database if it exists
 					$dropdb_conn = &NewADOConnection($db_type);

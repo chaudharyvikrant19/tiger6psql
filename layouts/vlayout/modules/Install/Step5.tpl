@@ -52,7 +52,7 @@
 									{vtranslate('LBL_DATABASE_TYPE','Install')}<span class="no">*</span>
 								</td>
 								<td>
-									{vtranslate('MySQL','Install')}
+									{vtranslate('PostgreSQL','Install')}
 								</td>
 							</tr>
 							<tr>

@@ -332,9 +332,13 @@ class Vtiger_Util_Helper {
 	 * @return character_set_database and collation_database
 	 */
 	function checkDbUTF8Support($conn) {
-		global $db_type;
-		if($db_type == 'pgsql')
+		//global $db_type;
+		//if($db_type == 'postgres')
+	    $pos = strpos($conn->databaseType, 'postgres');
+		if( $pos !== false ) {
 			return true;
+		}
+		
 		$dbvarRS = &$conn->Execute("show variables like '%_database' ");
 		$db_character_set = null;
 		$db_collation_type = null;

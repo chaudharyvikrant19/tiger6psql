@@ -54,6 +54,9 @@ class Install_ConfigFileUtils_Model {
 		if(Install_Utils_Model::isMySQL($dbType)) {
 			return "3306";
 		}
+		if(Install_Utils_Model::isPostgres($dbType)) {
+			return "5432";
+		}
 	}
 
 	function createConfigFile() {
