@@ -6856,8 +6856,9 @@
 		<field name="linkid" type="I" size="19" />
 		<field name="userid" type="I" size="19" />
 		<field name="filterid" type="I" size="19" />
+		<field name="position" type="C" size="50" />
 		<field name="title" type="C" size="100" />
-		<field name="data" type="C" size="500" >
+		<field name="data" type="X"  >
 			<default value="[]" />
 		</field>
 	</table>
