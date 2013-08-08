@@ -149,7 +149,7 @@ class Vtiger_Utils {
 		$adb->dieOnError = false;
 
 		$tablename = Vtiger_Utils::SQLEscape($tablename);
-		$tablecheck = $adb->pquery("SELECT 1 FROM $tablename LIMIT 1", array());
+		$tablecheck = $adb->pquery("SELECT 1 FROM ". $tablename ." LIMIT 1", array());
 
 		$tablePresent = true;
 		if(empty($tablecheck))

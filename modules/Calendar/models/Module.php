@@ -365,12 +365,13 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 			$currentTime = time();
 			$date = date('Y-m-d', strtotime("+$activityReminder seconds", $currentTime));
 			$time = date('H:i',   strtotime("+$activityReminder seconds", $currentTime));
-			$reminderActivitiesResult = "SELECT reminderid, recordid, semodule, date_start, time_start FROM vtiger_activity_reminder_popup
-								INNER JOIN vtiger_crmentity WHERE vtiger_activity_reminder_popup.status = 0
+			$reminderActivitiesResult = "SELECT reminderid, recordid, semodule, date_start, time_start 
+								FROM vtiger_activity_reminder_popup, vtiger_crmentity 
+								WHERE vtiger_activity_reminder_popup.status = 0
 								AND vtiger_activity_reminder_popup.recordid = vtiger_crmentity.crmid
 								AND vtiger_crmentity.smownerid = ? AND vtiger_crmentity.deleted = 0
-								AND ((DATE_FORMAT(vtiger_activity_reminder_popup.date_start,'%Y-%m-%d') <= ?)
-								AND (TIME_FORMAT(vtiger_activity_reminder_popup.time_start,'%H:%i') <= ?))";
+								AND ((to_char(vtiger_activity_reminder_popup.date_start,'%Y-%m-%d') <= ?)
+								AND ((to_timestamp(vtiger_activity_reminder_popup.time_start,'%H:%i'))::time <= ?))";
 			$result = $db->pquery($reminderActivitiesResult, array($currentUserModel->getId(), $date, $time));
 			$rows = $db->num_rows($result);
 			for($i=0; $i<$rows; $i++) {

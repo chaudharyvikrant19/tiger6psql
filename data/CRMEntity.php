@@ -1307,8 +1307,10 @@ class CRMEntity {
 			if ($adb->num_rows($check) == 0) {
 				$numid = $adb->getUniqueId("vtiger_modentity_num");
 				$active = $adb->pquery("select num_id from vtiger_modentity_num where semodule=? and active=1", array($module));
-				$adb->pquery("UPDATE vtiger_modentity_num SET active=0 where num_id=?", array($adb->query_result($active, 0, 'num_id')));
-
+				$param_num_id = $adb->query_result($active, 0, 'num_id');
+				if(!empty($param_num_id)) {
+					$adb->pquery("UPDATE vtiger_modentity_num SET active=0 where num_id=?", array($param_num_id));
+				}
 				$adb->pquery("INSERT into vtiger_modentity_num values(?,?,?,?,?,?)", array($numid, $module, $req_str, $req_no, $req_no, 1));
 				return true;
 			} else if ($adb->num_rows($check) != 0) {

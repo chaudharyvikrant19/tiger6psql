@@ -955,6 +955,7 @@ class Install_InitSchema_Model {
 		$task = $tm->createTask('VTEntityMethodTask', $invWorkFlow->id);
 		$task->active=true;
 		$task->methodName = "UpdateInventory";
+		$task->summary = 'Update Inventory';
 		$tm->saveTask($task);
 
 		// Creating Workflow for Accounts when Notifyowner is true
@@ -998,12 +999,12 @@ class Install_InitSchema_Model {
 		$task->methodName = "NotifyOwner";
 		$task->recepient = "\$(assigned_user_id : (Users) email1)";
 		$task->subject = "Regarding Contact Creation";
-		$task->content = "An Contact has been assigned to you on vtigerCRM<br>Details of Contact are :<br><br>".
+		$task->content = "A Contact has been assigned to you on vtigerCRM<br>Details of Contact are :<br><br>".
 				"Contact Id:".'<b>$contact_no</b><br>'."LastName:".'<b>$lastname</b><br>'."FirstName:".'<b>$firstname</b><br>'.
 				"Lead Source:".'<b>$leadsource</b><br>'.
 				"Department:".'<b>$department</b><br>'.
 				"Description:".'<b>$description</b><br><br><br>'."Thank You<br>Admin";
-		$task->summary="An contact has been created ";
+		$task->summary="A contact has been created ";
 		$tm->saveTask($task);
 		$adb->pquery("update com_vtiger_workflows set defaultworkflow=? where workflow_id=?",array(1,$id1));
 
@@ -1026,14 +1027,14 @@ class Install_InitSchema_Model {
 		$task->methodName = "NotifyOwner";
 		$task->recepient = "\$(assigned_user_id : (Users) email1)";
 		$task->subject = "Regarding Contact Assignment";
-		$task->content = "An Contact has been assigned to you on vtigerCRM<br>Details of Contact are :<br><br>".
+		$task->content = "A Contact has been assigned to you on vtigerCRM<br>Details of Contact are :<br><br>".
 				"Contact Id:".'<b>$contact_no</b><br>'."LastName:".'<b>$lastname</b><br>'."FirstName:".'<b>$firstname</b><br>'.
 				"Lead Source:".'<b>$leadsource</b><br>'.
 				"Department:".'<b>$department</b><br>'.
 				"Description:".'<b>$description</b><br><br><br>'."And <b>CustomerPortal Login Details</b> is sent to the " .
 				"EmailID :-".'$email<br>'."<br>Thank You<br>Admin";
 
-		$task->summary="An contact has been created ";
+		$task->summary="A contact has been created ";
 		$tm->saveTask($task);
 		$adb->pquery("update com_vtiger_workflows set defaultworkflow=? where workflow_id=?",array(1,$id1));
 

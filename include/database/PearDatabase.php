@@ -110,7 +110,7 @@ class PearDatabase{
 
     function isMySQL() { return (stripos($this->dbType ,'mysql') === 0);}
     function isOracle() { return $this->dbType=='oci8'; }
-    function isPostgres() { return $this->dbType=='pgsql'; }
+    function isPostgres() { return $this->dbType=='postgres'; }
 
     function println($msg)
     {
@@ -200,8 +200,9 @@ class PearDatabase{
         	return;
         }
 
-		$today  = date('Y-m-d H:i:s'); $logtable = 'vtiger_sqltimelog';
-		$logsql = 'INSERT INTO '.$logtable.'(id, type, started, ended, data, loggedon) VALUES (?,?,?,?,?,?)';
+		$today  = date('Y-m-d H:i:s'); 
+		$logtable = 'vtiger_sqltimelog';
+		$logsql = 'INSERT INTO '.$logtable.'(id, parentid, type, started, ended, data, loggedon) VALUES (?,?,?,?,?,?,?)';
 
 		if ($this->logSqlTimingID === false) {
 			$this->logSqlTimingID = $this->getUniqueID($logtable);
@@ -217,7 +218,7 @@ class PearDatabase{
 				$data = implode(' ', $argv);
 			}
 
-			$this->database->Execute($logsql, array($this->logSqlTimingID, $type, NULL, NULL, $data, $today));
+			$this->database->Execute($logsql, array($this->logSqlTimingID, NULL, $type, NULL, NULL, $data, $today));
 		}
 
 		$type = 'SQL';
@@ -225,7 +226,8 @@ class PearDatabase{
 		if (is_array($params) && !empty($params)) {
 			$data .= "\n[" . implode(",", $params) . "]";
 		}
-		$this->database->Execute($logsql, array($this->logSqlTimingID, $type, $startat, $endat, $data, $today));
+		$logID = $this->getUniqueID($logtable);
+		$this->database->Execute($logsql, array($logID, $this->logSqlTimingID, $type, $startat, $endat, $data, $today));
 
 		$type = 'CALLERS';
 		$data = array();
@@ -240,7 +242,8 @@ class PearDatabase{
 			}
 			$data[] = "CALLER: (" . $callers[$calleridx]['line'] . ') ' . $callers[$calleridx]['file'] . $callerfunc;
 		}
-		$this->database->Execute($logsql, array($this->logSqlTimingID, $type, NULL, NULL, implode("\n", $data), $today));
+		$logID = $this->getUniqueID($logtable);
+		$this->database->Execute($logsql, array($logID, $this->logSqlTimingID, $type, NULL, NULL, implode("\n", $data), $today));
 	}
 
 	/**
@@ -302,6 +305,24 @@ class PearDatabase{
 	return $result;
     }
 
+	/**
+	 * Convert '' and false to NULL
+	 */
+    function convert2Null($vals) {
+    	if(empty($vals)) {
+    		return $vals;
+    	}
+    	
+    	for($index = 0; $index < count($vals); $index++) {
+    		if($vals[$index] === '') {
+				$vals[$index] = null;
+			} elseif ($vals[$index] === false) {
+				$vals[$index] = null;
+			}
+    	}
+    	
+    	return $vals;
+    }
 
 	/**
 	 * Convert PreparedStatement to SQL statement
@@ -323,6 +344,10 @@ class PearDatabase{
 				}
 			}
 			if($vals[$index] === null) {
+				$vals[$index] = "NULL";
+			} elseif($vals[$index] === '') {
+				$vals[$index] = "NULL";
+			} elseif($vals[$index] === false) {
 				$vals[$index] = "NULL";
 			}
 		}
@@ -353,6 +378,7 @@ class PearDatabase{
 			$sql = $this->convert2Sql($sql, $params);
 			$result = &$this->database->Execute($sql);
 		} else {
+			$params = $this->convert2Null($params);
 			$result = &$this->database->Execute($sql, $params);
 		}
 		$sql_end_time = microtime(true);

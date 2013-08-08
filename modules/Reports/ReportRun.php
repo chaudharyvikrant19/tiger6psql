@@ -1106,13 +1106,13 @@ class ReportRun extends CRMEntity
 					$endDateTime = getValidDBInsertDateTimeValue($userEndDate);
 
 					if ($selectedfields[1] == 'birthday') {
-						$tableColumnSql = "DATE_FORMAT(".$selectedfields[0].".".$selectedfields[1].", '%m%d')";
-						$startDateTime = "DATE_FORMAT('$startDateTime', '%m%d')";
-						$endDateTime = "DATE_FORMAT('$endDateTime', '%m%d')";
+						$tableColumnSql = "to_char(".$selectedfields[0].".".$selectedfields[1].", '%m%d')";
+						$startDateTime = "to_char('$startDateTime', '%m%d')";
+						$endDateTime = "to_char('$endDateTime', '%m%d')";
 					} else {
 						if($selectedfields[0] == 'vtiger_activity' && ($selectedfields[1] == 'date_start')) {
 							$tableColumnSql = '';
-							$tableColumnSql = "CAST((CONCAT(date_start,' ',time_start)) AS DATETIME)";
+							$tableColumnSql = "to_timestamp(date_start || ' ' || time_start AS DATETIME,'YYYY-MM-DD HH24:MI:SS')";
 						} else {
 							$tableColumnSql = $selectedfields[0].".".$selectedfields[1];
 						}
@@ -3949,13 +3949,13 @@ class ReportRun extends CRMEntity
     function GetTimeCriteriaCondition($criteria,$dateField){
         $condition = "";
         if(strtolower($criteria)=='year'){
-            $condition = "DATE_FORMAT($dateField, '%Y' )";
+            $condition = "to_char($dateField, '%Y' )";
         }
         else if (strtolower($criteria)=='month'){
-            $condition = "CEIL(DATE_FORMAT($dateField,'%m')%13)";
+            $condition = "CEIL(to_char($dateField,'%m')%13)";
         }
         else if(strtolower($criteria)=='quarter'){
-            $condition = "CEIL(DATE_FORMAT($dateField,'%m')/3)";
+            $condition = "CEIL(to_char($dateField,'%m')/3)";
         }
         return $condition;
     }

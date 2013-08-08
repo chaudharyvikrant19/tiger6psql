@@ -275,9 +275,9 @@ class Vtiger_Cron {
         if(!self::$schemaInitialized) {
             if(!Vtiger_Utils::CheckTable('vtiger_cron_task')) {
                 Vtiger_Utils::CreateTable('vtiger_cron_task',
-                        '(id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-					name VARCHAR(100) UNIQUE KEY, handler_file VARCHAR(100) UNIQUE KEY,
-					frequency int, laststart int(11) unsigned, lastend int(11) unsigned, status int,module VARCHAR(100),
+                        '(id SERIAL PRIMARY KEY,
+					name VARCHAR(100) UNIQUE, handler_file VARCHAR(100) UNIQUE,
+					frequency int, laststart int, lastend int, status int,module VARCHAR(100),
                                         sequence int,description TEXT )',true);
             }
             self::$schemaInitialized = true;

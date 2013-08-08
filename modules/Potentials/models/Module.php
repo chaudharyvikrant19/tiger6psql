@@ -139,7 +139,7 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
 			$params[] = $dateFilter['end']. ' 23:59:59';
 		}
 		
-		$result = $db->pquery('SELECT sum(amount) amount, last_name,vtiger_users.id as id,DATE_FORMAT(closingdate, "%d-%m-%Y") AS closingdate  FROM vtiger_potential
+		$result = $db->pquery('SELECT sum(amount) amount, last_name,vtiger_users.id as id,to_char(closingdate, "%d-%m-%Y") AS closingdate  FROM vtiger_potential
 						INNER JOIN vtiger_crmentity ON vtiger_potential.potentialid = vtiger_crmentity.crmid
 						INNER JOIN vtiger_users ON vtiger_users.id=vtiger_crmentity.smownerid AND vtiger_users.status="ACTIVE"
 						AND vtiger_crmentity.deleted = 0 '.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).'WHERE sales_stage = ? '.' '.$dateFilterSql.' GROUP BY smownerid', $params);
@@ -200,7 +200,7 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
 			$params[] = $dateFilter['end']. ' 23:59:59';
 		}
 		
-		$result = $db->pquery('SELECT forecast_amount, DATE_FORMAT(closingdate, "%m-%d-%Y") AS closingdate FROM vtiger_potential
+		$result = $db->pquery('SELECT forecast_amount, to_char(closingdate, "%m-%d-%Y") AS closingdate FROM vtiger_potential
 					INNER JOIN vtiger_crmentity ON vtiger_potential.potentialid = vtiger_crmentity.crmid
 					AND deleted = 0 AND smownerid = ? WHERE closingdate >= CURDATE() AND sales_stage NOT IN ("Closed Won", "Closed Lost")'.
 					' '.$closingdateFilterSql.$dateFilterSql,

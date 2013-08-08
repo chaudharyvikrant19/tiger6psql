@@ -604,7 +604,7 @@ class QueryGenerator {
 				} else {
 					if($fieldName == 'birthday' && !$this->isRelativeSearchOperators(
 							$conditionInfo['operator'])) {
-						$fieldSql .= "$fieldGlue DATE_FORMAT(".$field->getTableName().'.'.
+						$fieldSql .= "$fieldGlue TO_CHAR(".$field->getTableName().'.'.
 								$field->getColumnName().",'%m%d') ".$valueSql;
 					} else {
 						$fieldSql .= "$fieldGlue ".$field->getTableName().'.'.
@@ -666,8 +666,8 @@ class QueryGenerator {
 			if($field->getFieldName() == 'birthday') {
 				$valueArray[0] = getValidDBInsertDateTimeValue($valueArray[0]);
 				$valueArray[1] = getValidDBInsertDateTimeValue($valueArray[1]);
-				$sql[] = "BETWEEN DATE_FORMAT(".$db->quote($valueArray[0]).", '%m%d') AND ".
-						"DATE_FORMAT(".$db->quote($valueArray[1]).", '%m%d')";
+				$sql[] = "BETWEEN TO_CHAR(".$db->quote($valueArray[0]).", '%m%d') AND ".
+						"To_CHAR(".$db->quote($valueArray[1]).", '%m%d')";
 			} else {
 				if($this->isDateType($field->getFieldDataType())) {
 					$valueArray[0] = getValidDBInsertDateTimeValue($valueArray[0]);
@@ -708,7 +708,7 @@ class QueryGenerator {
 
 			if($field->getFieldName() == 'birthday' && !$this->isRelativeSearchOperators(
 					$operator)) {
-				$value = "DATE_FORMAT(".$db->quote($value).", '%m%d')";
+				$value = "TO_CHAR(".$db->quote($value).", '%m%d')";
 			} else {
 				$value = $db->sql_escape_string($value);
 			}

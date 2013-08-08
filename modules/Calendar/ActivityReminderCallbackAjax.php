@@ -55,7 +55,7 @@ if(isPermitted('Calendar','index') == 'yes'){
 		" vtiger_activity_reminder_popup.recordid = vtiger_crmentity.crmid " .
 		" and vtiger_crmentity.smownerid = ".$current_user->id." and vtiger_crmentity.deleted = 0 " .
 		" and ((to_char(vtiger_activity_reminder_popup.date_start,'%Y-%m-%d') <= '" . $date . "')" .
-		" AND (to_timestamp(vtiger_activity_reminder_popup.time_start,'%H:%i') <= to_timestamp('" . $time . "','%H:%i')))";
+		" AND ((to_timestamp(vtiger_activity_reminder_popup.time_start,'%H:%i'))::time <= '" . $time . "'))";
 
 		$result = $adb->query($callback_query);
 
@@ -133,7 +133,7 @@ if(isPermitted('Calendar','index') == 'yes'){
 			" vtiger_activity_reminder_popup.recordid = vtiger_crmentity.crmid " .
 			" and vtiger_crmentity.smownerid = ".$current_user->id." and vtiger_crmentity.deleted = 0 ".
 			"AND vtiger_activity_reminder_popup.reminderid > 0 ORDER BY date_start DESC , ".
-			"to_timestamp(vtiger_activity_reminder_popup.time_start,'%H:%i') DESC LIMIT 1";
+			"(to_timestamp(vtiger_activity_reminder_popup.time_start,'%H:%i'))::time DESC LIMIT 1";
 			$result = $adb->query($callback_query);
 			$it = new SqlResultIterator($adb, $result);
 			$nextReminderTime = null;

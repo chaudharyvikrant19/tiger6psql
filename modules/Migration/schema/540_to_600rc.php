@@ -52,22 +52,22 @@ if(!defined(VTIGER_UPGRADE)) {
 }
 
 if(!defined('INSTALLATION_MODE')) {
-	Migration_Index_View::ExecuteQuery('ALTER TABLE com_vtiger_workflows ADD COLUMN filtersavedinnew int(1)', array());
+	Migration_Index_View::ExecuteQuery('ALTER TABLE com_vtiger_workflows ADD COLUMN filtersavedinnew TYPE int', array());
 }
 
 Migration_Index_View::ExecuteQuery('UPDATE com_vtiger_workflows SET filtersavedinnew = 5', array());
 
 if(!defined('INSTALLATION_MODE')) {
 	Migration_Index_View::ExecuteQuery("CREATE TABLE IF NOT EXISTS com_vtiger_workflow_tasktypes (
-					id int(11) NOT NULL,
+					id int NOT NULL,
 					tasktypename varchar(255) NOT NULL,
 					label varchar(255),
 					classname varchar(255),
 					classpath varchar(255),
 					templatepath varchar(255),
-					modules text(500),
+					modules text,
 					sourcemodule varchar(255)
-			) ENGINE=InnoDB DEFAULT CHARSET=utf8", array());
+			) ", array());
 
 	$taskTypes = array();
 	$defaultModules = array('include' => array(), 'exclude'=>array());
@@ -89,15 +89,14 @@ if(!defined('INSTALLATION_MODE')) {
 
 
 Migration_Index_View::ExecuteQuery("CREATE TABLE IF NOT EXISTS vtiger_shorturls (
-					id int(11) NOT NULL AUTO_INCREMENT,
+					id SERIAL NOT NULL,
 					uid varchar(50) DEFAULT NULL,
 					handler_path varchar(400) DEFAULT NULL,
 					handler_class varchar(100) DEFAULT NULL,
 					handler_function varchar(100) DEFAULT NULL,
 					handler_data varchar(255) DEFAULT NULL,
-					PRIMARY KEY (id),
-					KEY uid (uid)
-			) ENGINE=InnoDB DEFAULT CHARSET=utf8", array());
+					PRIMARY KEY (id)
+			) ", array());
 
 $moduleInstance = Vtiger_Module::getInstance('Potentials');
 $block = Vtiger_Block::getInstance('LBL_OPPORTUNITY_INFORMATION', $moduleInstance);
@@ -107,7 +106,7 @@ $forecast_field->name = 'forecast_amount';
 $forecast_field->label = 'Forecast Amount';
 $forecast_field->table ='vtiger_potential';
 $forecast_field->column = 'forecast_amount';
-$forecast_field->columntype = 'decimal(25,4)';
+$forecast_field->columntype = 'numeric(25,4)';
 $forecast_field->typeofdata = 'N~O';
 $forecast_field->uitype = '71';
 $forecast_field->masseditable = '0';
@@ -138,7 +137,7 @@ if(!defined('INSTALLATION_MODE')) {
 	$numRows = $adb->num_rows($picklistResult);
 	for($i=0; $i<$numRows; $i++) {
 		$fieldName = $adb->query_result($picklistResult,$i,'fieldname');
-		$query = 'ALTER TABLE vtiger_'.$fieldName.' ADD COLUMN sortorderid INT(1)';
+		$query = 'ALTER TABLE vtiger_'.$fieldName.' ADD COLUMN sortorderid TYPE INT';
 		Migration_Index_View::ExecuteQuery($query, array());
 	}
 }
@@ -233,16 +232,16 @@ Migration_Index_View::ExecuteQuery("UPDATE vtiger_report SET sharingtype='Public
 //End.
 
 //Currency Decimal places handling
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_account MODIFY COLUMN annualrevenue decimal(25,5)", array());
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_leaddetails MODIFY COLUMN annualrevenue decimal(25,5)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_account ALTER COLUMN annualrevenue TYPE numeric(25,5)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_leaddetails ALTER COLUMN annualrevenue TYPE numeric(25,5)", array());
 Migration_Index_View::ExecuteQuery("UPDATE vtiger_field SET typeofdata='N~O' WHERE fieldlabel='Annual Revenue' and typeofdata='I~O'",array());
 
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_currency_info MODIFY COLUMN conversion_rate decimal(12,5)", array());
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_productcurrencyrel MODIFY COLUMN actual_price decimal(28,5)", array());
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_productcurrencyrel MODIFY COLUMN converted_price decimal(28,5)", array());
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_pricebookproductrel MODIFY COLUMN listprice decimal(27,5)", array());
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_inventoryproductrel MODIFY COLUMN listprice decimal(27,5)", array());
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_inventoryproductrel MODIFY COLUMN discount_amount decimal(27,5)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_currency_info ALTER COLUMN conversion_rate TYPE numeric(12,5)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_productcurrencyrel ALTER COLUMN actual_price TYPE numeric(28,5)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_productcurrencyrel ALTER COLUMN converted_price TYPE numeric(28,5)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_pricebookproductrel ALTER COLUMN listprice TYPE numeric(27,5)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_inventoryproductrel ALTER COLUMN listprice TYPE numeric(27,5)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_inventoryproductrel ALTER COLUMN discount_amount TYPE numeric(27,5)", array());
 
 $currencyField = new CurrencyField($value);
 $result = $adb->pquery("SELECT fieldname,tablename,columnname FROM vtiger_field WHERE uitype IN (?,?)",array('71','72'));
@@ -267,7 +266,7 @@ for($i=0;$i<$count;$i++) {
 			$maxlength = $tableAndColumnSize[$tableName][$columnName]['max_length'] + $decimalsToChange;
 			$decimalDigits = $tableAndColumnSize[$tableName][$columnName]['scale'] + $decimalsToChange;
 
-			Migration_Index_View::ExecuteQuery("ALTER TABLE " .$tableName." MODIFY COLUMN ".$columnName." decimal(?,?)", array($maxlength, $decimalDigits));
+			Migration_Index_View::ExecuteQuery("ALTER TABLE " .$tableName." ALTER COLUMN ".$columnName." TYPE numeric(".$maxlength.",".$decimalDigits.")", array());
 		}
 	}
 }
@@ -366,7 +365,7 @@ $fieldTypeId = $adb->getUniqueID("vtiger_ws_entity_fieldtype");
 Migration_Index_View::ExecuteQuery("INSERT INTO vtiger_ws_entity_fieldtype(fieldtypeid,table_name,field_name,fieldtype) VALUES (?,?,?,?);", array($fieldTypeId,'vtiger_inventoryproductrel', 'incrementondel',"autogenerated"));
 
 $adb->getUniqueID("vtiger_inventoryproductrel");
-Migration_Index_View::ExecuteQuery("UPDATE vtiger_inventoryproductrel_seq SET id=(select max(lineitem_id) from vtiger_inventoryproductrel);",array());
+//Migration_Index_View::ExecuteQuery("UPDATE vtiger_inventoryproductrel_seq SET id=(select max(lineitem_id) from vtiger_inventoryproductrel);",array());
 Migration_Index_View::ExecuteQuery("UPDATE vtiger_ws_entity SET handler_path='include/Webservices/LineItem/VtigerInventoryOperation.php',handler_class='VtigerInventoryOperation' where name in ('Invoice','Quotes','PurchaseOrder','SalesOrder');",array());
 
 $purchaseOrderTabId = getTabid("PurchaseOrder");
@@ -430,7 +429,7 @@ Migration_Index_View::ExecuteQuery("UPDATE vtiger_picklist_dependency SET source
 //Internationalized the description for webforms
 Migration_Index_View::ExecuteQuery("UPDATE vtiger_settings_field SET description=? WHERE description=?", array('LBL_WEBFORMS_DESCRIPTION', 'Allows you to manage Webforms'));
 
-Migration_Index_View::ExecuteQuery('CREATE TABLE IF NOT EXISTS vtiger_crmsetup(userid INT(11) NOT NULL, setup_status INT(2))', array());
+Migration_Index_View::ExecuteQuery('CREATE TABLE IF NOT EXISTS vtiger_crmsetup(userid INT NOT NULL, setup_status INT)', array());
 
 $result = $adb->pquery('SELECT id FROM vtiger_users', array());
 $num_rows = $adb->num_rows($result);
@@ -440,7 +439,7 @@ for ($i=0; $i<$num_rows; $i++) {
 	Users_CRMSetup::insertEntryIntoCRMSetup($userid);
 }
 
-$discountResult = Migration_Index_View::ExecuteQuery('SELECT * FROM vtiger_selectcolumn WHERE columnname LIKE "vtiger_inventoryproductrel:discount:%" ORDER BY columnindex', array());
+$discountResult = Migration_Index_View::ExecuteQuery("SELECT * FROM vtiger_selectcolumn WHERE columnname LIKE 'vtiger_inventoryproductrel:discount:%' ORDER BY columnindex", array());
 $num_rows = $adb->num_rows($discountResult);
 
 for ($i=0; $i<$num_rows; $i++) {
@@ -478,11 +477,11 @@ $truncateTrailingZeros->helpinfo = "<b> Truncate Trailing Zeros </b> <br/><br/>"
     "currency field type - shows 89.00<br/>";
 $currencyBlock->addField($truncateTrailingZeros);
 
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_productcurrencyrel MODIFY COLUMN actual_price decimal(28,8)", array());
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_productcurrencyrel MODIFY COLUMN converted_price decimal(28,8)", array());
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_pricebookproductrel MODIFY COLUMN listprice decimal(27,8)", array());
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_inventoryproductrel MODIFY COLUMN listprice decimal(27,8)", array());
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_inventoryproductrel MODIFY COLUMN discount_amount decimal(27,8)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_productcurrencyrel ALTER COLUMN actual_price TYPE numeric(28,8)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_productcurrencyrel ALTER COLUMN converted_price TYPE numeric(28,8)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_pricebookproductrel ALTER COLUMN listprice TYPE numeric(27,8)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_inventoryproductrel ALTER COLUMN listprice TYPE numeric(27,8)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_inventoryproductrel ALTER COLUMN discount_amount TYPE numeric(27,8)", array());
 
 $currencyField = new CurrencyField($value);
 $result = Migration_Index_View::ExecuteQuery("SELECT tablename,columnname FROM vtiger_field WHERE uitype IN (?,?)",array('71','72'));
@@ -490,7 +489,7 @@ $count = $adb->num_rows($result);
 for($i=0;$i<$count;$i++) {
 	$tableName = $adb->query_result($result,$i,'tablename');
 	$columnName = $adb->query_result($result,$i,'columnname');
-	Migration_Index_View::ExecuteQuery("ALTER TABLE " .$tableName." MODIFY COLUMN ".$columnName." decimal(?,?)", array(25, 8));
+	Migration_Index_View::ExecuteQuery("ALTER TABLE " .$tableName." ALTER COLUMN ".$columnName." TYPE numeric(25,8)", array());
 }
 
 Migration_Index_View::ExecuteQuery('DELETE FROM vtiger_no_of_currency_decimals WHERE no_of_currency_decimalsid=?', array(1));
@@ -595,7 +594,7 @@ $pickListValues = array('--None--', 'Open', 'In Progress', 'Completed', 'Deferre
 $fieldInstance->setPicklistValues($pickListValues);
 
 //Dashboard schema changes
-Vtiger_Utils::CreateTable('vtiger_module_dashboard_widgets', '(id INT(19) NOT NULL AUTO_INCREMENT, linkid INT(19), userid INT(19), filterid INT(19),
+Vtiger_Utils::CreateTable('vtiger_module_dashboard_widgets', '(id SERIAL NOT NULL, linkid INT, userid INT, filterid INT,
 				title VARCHAR(100), data VARCHAR(500) DEFAULT "[]", PRIMARY KEY(id))');
 $potentials = Vtiger_Module::getInstance('Potentials');
 $potentials->addLink('DASHBOARDWIDGET', 'History', 'index.php?module=Potentials&view=ShowWidget&name=History','', '1');
@@ -692,9 +691,9 @@ Migration_Index_View::ExecuteQuery("DELETE FROM vtiger_cvcolumnlist WHERE cvid I
 			AND columnindex = 0", array());
 
 // Added indexes for Modtracker Module to improve performance
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_modtracker_basic ADD INDEX crmidx (crmid)', array());
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_modtracker_basic ADD INDEX idx (id)', array());
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_modtracker_detail ADD INDEX idx (id)', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_modtracker_basic ADD INDEX modtracker_basic_idx (crmid)', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_modtracker_basic ADD INDEX modtracker_basic_idx2 (id)', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_modtracker_detail ADD INDEX modtracker_detail_idx (id)', array());
 
 // Ends
 
@@ -728,10 +727,10 @@ $task1->methodName = "TicketOwnerComments";
 $taskManager->saveTask($task1);
 // Ends
 
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_links MODIFY column linktype VARCHAR(50)', array());
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_links MODIFY column linklabel VARCHAR(50)', array());
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_links MODIFY column handler_class VARCHAR(50)', array());
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_links MODIFY column handler VARCHAR(50)', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_links ALTER column linktype TYPE VARCHAR(50)', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_links ALTER column linklabel TYPE VARCHAR(50)', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_links ALTER column handler_class TYPE VARCHAR(50)', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_links ALTER column handler TYPE VARCHAR(50)', array());
 //--
 //Add ModComments to HelpDesk and Faq module
 require_once 'modules/ModComments/ModComments.php';
@@ -964,7 +963,7 @@ foreach ($inventoryModules as $module => $details) {
     $preTaxTotalField->label = 'Pre Tax Total';
     $preTaxTotalField->table = $tableName;
     $preTaxTotalField->column = 'pre_tax_total';
-    $preTaxTotalField->columntype = 'decimal(25,8)';
+    $preTaxTotalField->columntype = 'numeric(25,8)';
     $preTaxTotalField->typeofdata = 'N~O';
     $preTaxTotalField->uitype = '72';
     $preTaxTotalField->masseditable = '1';
@@ -1129,7 +1128,7 @@ if (!$field4) {
 
 
 $sqltimelogTable = "CREATE TABLE vtiger_sqltimelog ( id integer, type VARCHAR(10),
-					data text, started decimal(18,2), ended decimal(18,2), loggedon datetime)";
+					data text, started numeric(18,2), ended numeric(18,2), loggedon timestamp)";
 
 Migration_Index_View::ExecuteQuery($sqltimelogTable, array());
 
@@ -1171,7 +1170,7 @@ if($moduleInstance) {
 		'module=Google&view=List&sourcemodule=Calendar', '','', '');
 }
 
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_cvadvfilter MODIFY comparator VARCHAR(20)', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_cvadvfilter ALTER COLUMN comparator TYPE VARCHAR(20)', array());
 Migration_Index_View::ExecuteQuery('UPDATE vtiger_cvadvfilter SET comparator = ? WHERE comparator = ?', array('next120days', 'next120day'));
 Migration_Index_View::ExecuteQuery('UPDATE vtiger_cvadvfilter SET comparator = ? WHERE comparator = ?', array('last120days', 'last120day'));
 
@@ -1181,13 +1180,13 @@ Migration_Index_View::ExecuteQuery("UPDATE vtiger_relatedlists SET actions = ? W
 Migration_Index_View::ExecuteQuery("UPDATE vtiger_field SET typeofdata = ? WHERE columnname = ? AND tablename = ?", array("V~O", "company", "vtiger_leaddetails"));
 
 if(Vtiger_Utils::CheckTable('vtiger_cron_task')) {
-	Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_cron_task MODIFY COLUMN laststart INT(11) UNSIGNED',Array());
-	Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_cron_task MODIFY COLUMN lastend INT(11) UNSIGNED',Array());
+	Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_cron_task ALTER COLUMN laststart TYPE INT',Array());
+	Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_cron_task ALTER COLUMN lastend TYPE INT',Array());
 }
 
 if(Vtiger_Utils::CheckTable('vtiger_cron_log')) {
-	Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_cron_log MODIFY COLUMN start INT(11) UNSIGNED',Array());
-   	Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_cron_log MODIFY COLUMN end INT(11) UNSIGNED',Array());
+	Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_cron_log ALTER COLUMN start TYPE INT',Array());
+   	Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_cron_log ALTER COLUMN end TYPE INT',Array());
 }
 
 require_once 'vtlib/Vtiger/Cron.php';
@@ -1196,18 +1195,18 @@ Vtiger_Cron::deregister('ScheduleReports');
 
 // Start 2013.03.19
 // Mail Converter schema changes
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_mailscanner ADD COLUMN timezone VARCHAR(10) default NULL', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_mailscanner ADD COLUMN timezone TYPE VARCHAR(10) default NULL', array());
 Migration_Index_View::ExecuteQuery('UPDATE vtiger_mailscanner SET timezone=? WHERE server LIKE ? AND timezone IS NULL', array('-8:00', '%.gmail.com'));
 
 Migration_Index_View::ExecuteQuery('UPDATE vtiger_report SET state=?', array('CUSTOM'));
 
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_relcriteria MODIFY value VARCHAR(512)", array());
-Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_cvadvfilter MODIFY value VARCHAR(512)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_relcriteria ALTER COLUMN value TYPE VARCHAR(512)", array());
+Migration_Index_View::ExecuteQuery("ALTER TABLE vtiger_cvadvfilter ALTER COLUMN value TYPE VARCHAR(512)", array());
 // End 2013.03.19
 
 // Start 2013.04.23
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_sqltimelog MODIFY started DECIMAL(20,6)', array());
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_sqltimelog MODIFY ended DECIMAL(20,6)', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_sqltimelog ALTER COLUMN started TYPE NUMERIC(20,6)', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_sqltimelog ALTER COLUMN ended TYPE NUMERIC(20,6)', array());
 
 //added Assests tab in contact
 $assetsModuleInstance = Vtiger_Module::getInstance('Assets');
@@ -1216,15 +1215,15 @@ $contactModule->setRelatedList($assetsModuleInstance, '', false, 'get_dependents
 // End 2013.04.23
 
 // Start 2013.04.30
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_users MODIFY signature TEXT', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_users ALTER COLUMN signature TYPE TEXT', array());
 //Adding column to store the state of short cut settings fields
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_settings_field ADD COLUMN pinned int(1) DEFAULT 0',array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_settings_field ADD COLUMN pinned int DEFAULT 0',array());
 
 $defaultPinnedFields = array('LBL_USERS','LBL_LIST_WORKFLOWS','VTLIB_LBL_MODULE_MANAGER','LBL_PICKLIST_EDITOR');
 $defaultPinnedSettingFieldQuery = 'UPDATE vtiger_settings_field SET pinned=1 WHERE name IN ('.generateQuestionMarks($defaultPinnedFields).')';
 Migration_Index_View::ExecuteQuery($defaultPinnedSettingFieldQuery,$defaultPinnedFields);
 
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_profile ADD COLUMN directly_related_to_role int(1) DEFAULT 0',array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_profile ADD COLUMN directly_related_to_role TYPE int DEFAULT 0',array());
 
 $blockId = getSettingsBlockId('LBL_STUDIO');
 $result = $adb->pquery('SELECT max(sequence) as maxSequence FROM vtiger_settings_field WHERE blockid=?', array($blockId));
@@ -1244,13 +1243,13 @@ Migration_Index_View::ExecuteQuery('UPDATE vtiger_role SET rolename = ? WHERE ro
 
 
 //Create a new table to support custom fields in Documents module
-$adb->query("CREATE TABLE IF NOT EXISTS vtiger_notescf (notesid INT(19), FOREIGN KEY fk_1_vtiger_notescf(notesid) REFERENCES vtiger_notes(notesid) ON DELETE CASCADE);");
+$adb->query("CREATE TABLE IF NOT EXISTS vtiger_notescf (notesid INT, FOREIGN KEY fk_1_vtiger_notescf(notesid) REFERENCES vtiger_notes(notesid) ON DELETE CASCADE);");
 
 if(!defined('INSTALLATION_MODE')) {
-	Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_salutationtype ADD COLUMN sortorderid INT(1)', array());
+	Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_salutationtype ADD COLUMN sortorderid TYPE INT', array());
 }
 
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_field ADD COLUMN summaryfield int(1) DEFAULT 0', array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_field ADD COLUMN summaryfield TYPE int DEFAULT 0', array());
 
 $summaryFields = array(
 	'Accounts'	=> array('assigned_user_id', 'email1', 'phone', 'bill_city', 'bill_country', 'website'),
@@ -1397,7 +1396,7 @@ if (!$leadsOptOutField) {
 $module = Vtiger_Module::getInstance('Home');
 $module->addLink('DASHBOARDWIDGET', 'Notebook', 'index.php?module=Home&view=ShowWidget&name=Notebook');
 
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_module_dashboard_widgets MODIFY data TEXT',array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_module_dashboard_widgets ALTER COLUMN data TYPE TEXT',array());
 
 $linkIdResult = $adb->pquery('SELECT linkid FROM vtiger_links WHERE vtiger_links.linklabel="Notebook"', array());
 $noteBookLinkId = $adb->query_result($linkIdResult, 0, 'linkid');
@@ -1438,10 +1437,10 @@ if(!$modCommentsReasonToEdit){
 	$blockInstance->addField($reasonToEdit);
 }
 
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_invoice MODIFY balance decimal(25,8)',array());
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_invoice MODIFY received decimal(25,8)',array());
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_purchaseorder MODIFY balance decimal(25,8)',array());
-Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_purchaseorder MODIFY paid decimal(25,8)',array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_invoice ALTER COLUMN balance TYPE numeric(25,8)',array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_invoice ALTER COLUMN received TYPE numeric(25,8)',array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_purchaseorder ALTER COLUMN balance TYPE numeric(25,8)',array());
+Migration_Index_View::ExecuteQuery('ALTER TABLE vtiger_purchaseorder ALTER COLUMN paid TYPE numeric(25,8)',array());
 
 $labels = array('LBL_ADD_NOTE', 'Add Note');
 $sql = 'UPDATE vtiger_links SET handler = ?, handler_class = ?, handler_path = ? WHERE linklabel IN (?, ?)';

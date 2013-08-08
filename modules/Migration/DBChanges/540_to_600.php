@@ -593,7 +593,7 @@ $pickListValues = array('--None--', 'Open', 'In Progress', 'Completed', 'Deferre
 $fieldInstance->setPicklistValues($pickListValues);
 
 //Dashboard schema changes
-Vtiger_Utils::CreateTable('vtiger_module_dashboard_widgets', "(id SERIAL NOT NULL, linkid INT8, userid INT8, filterid INT8,
+Vtiger_Utils::CreateTable('vtiger_module_dashboard_widgets', "(id SERIAL NOT NULL, position int, linkid INT8, userid INT8, filterid INT8,
 				title VARCHAR(100), data VARCHAR(500) DEFAULT '[]', PRIMARY KEY(id))");
 $potentials = Vtiger_Module::getInstance('Potentials');
 $potentials->addLink('DASHBOARDWIDGET', 'History', 'index.php?module=Potentials&view=ShowWidget&name=History','', '1');

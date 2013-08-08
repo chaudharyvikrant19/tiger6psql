@@ -1094,17 +1094,17 @@ class CustomView extends CRMEntity {
 					$columns = explode(":", $filtercolumn);
 					// Fix for http://trac.vtiger.com/cgi-bin/trac.cgi/ticket/5423
 					if ($columns[1] == 'birthday') {
-						$tableColumnSql = "DATE_FORMAT(" . $columns[0] . "." . $columns[1] . ", '%m%d')";
-						$startDateTime = "DATE_FORMAT('$startDate', '%m%d')";
-						$endDateTime = "DATE_FORMAT('$endDate', '%m%d')";
+						$tableColumnSql = "to_char(" . $columns[0] . "." . $columns[1] . ", '%m%d')";
+						$startDateTime = "to_char('$startDate', '%m%d')";
+						$endDateTime = "to_char('$endDate', '%m%d')";
 						$stdfiltersql = $tableColumnSql . " BETWEEN " . $startDateTime . " and " . $endDateTime;
 					} else {
 						if ($this->customviewmodule == 'Calendar' && ($columns[1] == 'date_start' || $columns[1] == 'due_date')) {
 							$tableColumnSql = '';
 							if ($columns[1] == 'date_start') {
-								$tableColumnSql = "CAST((CONCAT(date_start,' ',time_start)) AS DATETIME)";
+								$tableColumnSql = "to_timestamp(date_start || ' ' || time_start,'YYYY-MM-DD HH24:MI:SS')";
 							} else {
-								$tableColumnSql = "CAST((CONCAT(due_date,' ',time_end)) AS DATETIME)";
+								$tableColumnSql = "to_timestamp(due_date || ' ' || time_end,'YYYY-MM-DD HH24:MI:SS')";
 							}
 						} else {
 							$tableColumnSql = $columns[0] . "." . $columns[1];

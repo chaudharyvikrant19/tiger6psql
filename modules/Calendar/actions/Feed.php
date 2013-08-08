@@ -229,14 +229,14 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		$query.= " INNER JOIN vtiger_contactsubdetails ON vtiger_contactdetails.contactid = vtiger_contactsubdetails.contactsubscriptionid";
 		$query.= " INNER JOIN vtiger_crmentity ON vtiger_contactdetails.contactid = vtiger_crmentity.crmid";
 		$query.= " WHERE vtiger_crmentity.deleted=0 AND smownerid='{$user->getId()}' AND";
-		$query.= " ((CONCAT('$year-', date_format(birthday,'%m-%d')) >= '$start'
-						AND CONCAT('$year-', date_format(birthday,'%m-%d')) <= '$end')";
+		$query.= " (('$year-' || to_char(birthday,'%m-%d') >= '$start'
+						AND '$year-' || to_char(birthday,'%m-%d') <= '$end')";
 
 		$endDateYear = $endDateComponents[0];
 		if ($year !== $endDateYear) {
 			$query .= " OR
-						(CONCAT('$endDateYear-', date_format(birthday,'%m-%d')) >= '$start'
-							AND CONCAT('$endDateYear-', date_format(birthday,'%m-%d')) <= '$end')";
+						('$endDateYear-' || to_char(birthday,'%m-%d') >= '$start'
+							AND '$endDateYear-' || to_char(birthday,'%m-%d') <= '$end')";
 		}
 		$query .= ")";
 

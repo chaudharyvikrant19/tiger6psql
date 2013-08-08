@@ -32,7 +32,7 @@
 				$handlerId = $adb->getUniqueId('vtiger_eventhandlers');
 				$adb->pquery("insert into vtiger_eventhandlers
 					(eventhandler_id, event_name, handler_path, handler_class, cond, is_active, dependent_on)
-					values (?,?,?,?,?, true, ?)", array($handlerId, $forEvent, $path, $className, $condition, $depedentOn));
+					values (?,?,?,?,?, 1, ?)", array($handlerId, $forEvent, $path, $className, $condition, $depedentOn));
 
 				$this->clearTriggerCache($forEvent);
 			}
